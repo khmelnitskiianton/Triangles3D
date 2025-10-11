@@ -54,7 +54,7 @@ Let the two planes be:
 $$ \mathcal{P}_1 : \vec{n}_1 \cdot \vec{X} = s_1 $$
 $$ \mathcal{P}_2 : \vec{n}_2 \cdot \vec{X} = s_2 $$
 
-where  $$ \vec{n}_1, \vec{n}_2 $$ are normal vectors.
+where  $$\vec{n}_1, \vec{n}_2$$ are normal vectors.
 
 ---
 
@@ -126,7 +126,7 @@ $$
 \vec{n}_2 \cdot \vec{P} = s_2
 $$
 
-  Solving for $$ a $$ and \(b\):
+  Solving for $$a$$ and $$b$$:
 
 $$
 a = \frac{s_2(\vec{n}_1 \cdot \vec{n}_2) - s_1 \|\vec{n}_2\|^2}{(\vec{n}_1 \cdot \vec{n}_2)^2 - \|\vec{n}_1\|^2 \|\vec{n}_2\|^2}
