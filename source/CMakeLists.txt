@@ -2,6 +2,16 @@ set(TARGET triangles)
 
 set(SOURCES 
     ${PROJECT_SOURCE_DIR}/source/main.cpp
+    ${PROJECT_SOURCE_DIR}/source/triangle.cpp
+
+    # Primitives
+    ${PROJECT_SOURCE_DIR}/source/primitives/vector.cpp
+    ${PROJECT_SOURCE_DIR}/source/primitives/plane.cpp
+    ${PROJECT_SOURCE_DIR}/source/primitives/point.cpp
+    ${PROJECT_SOURCE_DIR}/source/primitives/line.cpp
+    ${PROJECT_SOURCE_DIR}/source/primitives/common.cpp
+    ${PROJECT_SOURCE_DIR}/source/primitives/segment.cpp
+
    )
 
 add_executable(${TARGET} ${SOURCES})
@@ -10,6 +20,7 @@ target_include_directories(${TARGET} PUBLIC "${PROJECT_SOURCE_DIR}/include")
 set_target_properties(${TARGET} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+
 target_compile_options(${TARGET} PRIVATE
     $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:
         # Debug codegen
