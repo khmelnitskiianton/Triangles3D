@@ -100,41 +100,47 @@ then the intersection is a **line**.
 
 - **Line direction:**
 
-  $$
-  \vec{d} = \vec{n}_1 \times \vec{n}_2
-  $$
+$$
+\vec{d} = \vec{n}_1 \times \vec{n}_2
+$$
 
 - **Point on the line:**
 
   Assume
 
-  $$
-  \vec{P} = a \vec{n}_1 + b \vec{n}_2
-  $$
-  
+$$
+\vec{P} = a \vec{n}_1 + b \vec{n}_2
+$$
+
   Plug into both plane equations:
 
-  $$
-  \begin{cases}
-  \vec{n}_1 \cdot \vec{P} = s_1 \\
-  \vec{n}_2 \cdot \vec{P} = s_2
-  \end{cases}
-  $$
+1.
 
-  Solving for \(a\) and \(b\):
+$$
+\vec{n}_1 \cdot \vec{P} = s_1
+$$
 
-  $$
-  \begin{aligned}
-  a &= \frac{s_2(\vec{n}_1 \cdot \vec{n}_2) - s_1 \|\vec{n}_2\|^2}{(\vec{n}_1 \cdot \vec{n}_2)^2 - \|\vec{n}_1\|^2 \|\vec{n}_2\|^2} \\
-  b &= \frac{s_1(\vec{n}_1 \cdot \vec{n}_2) - s_2 \|\vec{n}_1\|^2}{(\vec{n}_1 \cdot \vec{n}_2)^2 - \|\vec{n}_1\|^2 \|\vec{n}_2\|^2}
-  \end{aligned}
-  $$
+2.
+
+$$
+\vec{n}_2 \cdot \vec{P} = s_2
+$$
+
+  Solving for $$ a $$ and \(b\):
+
+$$
+a = \frac{s_2(\vec{n}_1 \cdot \vec{n}_2) - s_1 \|\vec{n}_2\|^2}{(\vec{n}_1 \cdot \vec{n}_2)^2 - \|\vec{n}_1\|^2 \|\vec{n}_2\|^2}
+$$
+
+$$
+b = \frac{s_1(\vec{n}_1 \cdot \vec{n}_2) - s_2 \|\vec{n}_1\|^2}{(\vec{n}_1 \cdot \vec{n}_2)^2 - \|\vec{n}_1\|^2 \|\vec{n}_2\|^2}
+$$
 
 **Intersection line equation:**
 
-  $$
-  \vec{X}(t) = (a \vec{n}_1 + b \vec{n}_2) + t (\vec{n}_1 \times \vec{n}_2)
-  $$
+$$
+\vec{X}(t) = (a \vec{n}_1 + b \vec{n}_2) + t (\vec{n}_1 \times \vec{n}_2)
+$$
 
 ---
 
