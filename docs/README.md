@@ -51,21 +51,21 @@ Point p = A(or B,C)
 
 Let the two planes be:
 
-$$
-\mathcal{P}_1 : \vec{n}_1 \cdot \vec{X} = s_1 \\
-\mathcal{P}_2 : \vec{n}_2 \cdot \vec{X} = s_2
-$$
+$$ \mathcal{P}_1 : \vec{n}_1 \cdot \vec{X} = s_1 $$
+$$ \mathcal{P}_2 : \vec{n}_2 \cdot \vec{X} = s_2 $$
 
-where \( \vec{n}_1, \vec{n}_2 \) are normal vectors.
+where  $$ \vec{n}_1, \vec{n}_2 $$ are normal vectors.
 
 ---
 
 #### Planes are parallel but distinct
 
 Normals are **parallel**:
+
 $$
 \vec{n}_1 \times \vec{n}_2 = \vec{0}
 $$
+
 but **not proportional** in offset:
 
 $$
@@ -80,6 +80,7 @@ they are parallel and separate.
 #### Planes coincide
 
 Normals are parallel and offsets match:
+
 $$
 \vec{n}_1 \times \vec{n}_2 = \vec{0}, \qquad \frac{s_1}{\|\vec{n}_1\|} = \frac{s_2}{\|\vec{n}_2\|}
 $$
@@ -106,10 +107,13 @@ then the intersection is a **line**.
 - **Point on the line:**
 
   Assume
+
   $$
   \vec{P} = a \vec{n}_1 + b \vec{n}_2
   $$
+  
   Plug into both plane equations:
+
   $$
   \begin{cases}
   \vec{n}_1 \cdot \vec{P} = s_1 \\
