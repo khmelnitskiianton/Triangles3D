@@ -30,7 +30,9 @@ class Segment {
 
 bool equal(const Segment &s1, const Segment &s2);
 
-/// Belongs to one line!
+/// Intersection of 2 segments lying on one line(also degenerated cases)
+bool intersection_2segments_on_line(const Segment &s1, const Segment &s2);
+/// Intersection of 2 segments in space(also degenerated cases)
 bool intersection_2segments(const Segment &s1, const Segment &s2);
 
 #endif

@@ -5,7 +5,8 @@
 #include "primitives/point.hpp"
 #include "primitives/segment.hpp"
 #include "primitives/vector.hpp"
+#include "triangle.hpp"
 
-int main() {
-    return 0;
+int main() { 
+  return 0; 
 }

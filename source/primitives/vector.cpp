@@ -94,13 +94,13 @@ bool operator!=(const Vector &a, const Vector &b) { return !(a == b); }
 
 /// Other methods
 
-double norm(const Vector &v) { return std::sqrt(v * v); };
+double norm(const Vector &v) { return std::sqrt(v * v); }
+double norm2(const Vector &v) { return v * v; }
 
 Vector normalize(const Vector &v) {
   double n = norm(v);
   if (compare_doubles(n, 0))
     return Vector::badVector();
-
   return v / norm(v);
 }
 

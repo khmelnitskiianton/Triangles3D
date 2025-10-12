@@ -73,5 +73,5 @@ jobs:
         mkdir -p build
         tar -xzf build-debug.tar.gz -C build
 
-    - name: GTests
+    - name: UnitTests
       run: ctest --test-dir build/tests --output-on-failure

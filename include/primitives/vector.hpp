@@ -63,6 +63,7 @@ bool operator!=(const Vector &a, const Vector &b);
 /// Support methods
 
 double norm(const Vector &v);
+double norm2(const Vector &v);
 Vector normalize(const Vector &v);
 Vector cross_product(const Vector &a, const Vector &b);
 
