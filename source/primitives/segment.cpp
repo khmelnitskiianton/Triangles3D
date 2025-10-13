@@ -52,7 +52,7 @@ bool equal(const Segment &s1, const Segment &s2) {
     return false;
   double t_c = (ac * v) / (v * v);
   double t_d = (ad * v) / (v * v);
-  if (compare_doubles(std::min(t_c, t_d), 0) && compare_doubles(std::max(t_c, t_d), 1))
+  if (approx_equal(std::min(t_c, t_d), 0) && approx_equal(std::max(t_c, t_d), 1))
     return true;
   return false;
 }

@@ -30,8 +30,10 @@ bool Triangle::isInclude(const Point &p) const {
   Vector n_p = plane.getN();
 
   // not on a plane
-  const double offset = n_p * vec_from_points(a_, p);
-  if (!compare_doubles(offset, 0.0))
+  Vector ap = vec_from_points(a_, p);
+  double offset = n_p * ap;
+  double plane_scale = std::max(1.0, norm(n_p) * norm(ap));
+  if (!approx_zero(offset, plane_scale))
     return false;
 
   double c1 = n_p * cross_product(vec_from_points(b_, a_), vec_from_points(p, a_));
@@ -40,8 +42,8 @@ bool Triangle::isInclude(const Point &p) const {
 
   // Treat "nonnegative"
   // Treat "nonpositive"
-  auto geq0 = [&](double x) { return (x > 0.0) || compare_doubles(x, 0.0); };
-  auto leq0 = [&](double x) { return (x < 0.0) || compare_doubles(x, 0.0); };
+  auto geq0 = [&](double x) { return ge_approx(x, 0.0); };
+  auto leq0 = [&](double x) { return le_approx(x, 0.0); };
 
   bool nonNeg = geq0(c1) && geq0(c2) && geq0(c3);
   bool nonPos = leq0(c1) && leq0(c2) && leq0(c3);
@@ -56,7 +58,7 @@ bool Triangle::isDegenerate() const {
   Vector ab = vec_from_points(a_, b_);
   Vector ac = vec_from_points(a_, c_);
   Vector n = cross_product(ab, ac);
-  return compare_doubles(n * n, 0);
+  return approx_zero(n * n);
 }
 
 Collapsed Triangle::collapsedTriangle() const {
@@ -67,7 +69,7 @@ Collapsed Triangle::collapsedTriangle() const {
   double n2 = n * n;
 
   // Proper (non-degenerate) triangle -> not collapsed
-  if (!compare_doubles(n2, 0.0))
+  if (!approx_zero(n2))
     return std::monostate{};
 
   // 2) Degenerate: choose farthest pair among the three vertices
@@ -95,7 +97,7 @@ Collapsed Triangle::collapsedTriangle() const {
   }
 
   // 3) If even the longest edge is ~0, all points coincide -> point
-  if (compare_doubles(dmax, 0.0))
+  if (approx_zero(dmax))
     return Point(*p);
 
   // 4) Otherwise collapsed triangle is that longest edge
@@ -272,7 +274,6 @@ bool intersection_2triangles(const Triangle &t1, const Triangle &t2) {
 
   // Triangle & Segment
   if (std::holds_alternative<std::monostate>(obj1) && std::holds_alternative<Segment>(obj2)) {
-    std::get<Segment>(obj2).print(std::cout);
     return intersection_triangle_segment(t1, std::get<Segment>(obj2));
   }
   if (std::holds_alternative<std::monostate>(obj2) && std::holds_alternative<Segment>(obj1)) {
@@ -319,9 +320,13 @@ std::optional<Segment> intersection_triangle_line(const Triangle &t, const Line 
   // n·(p0 + t v) = s  ->  t = (s - n·p0) / (n·v)
   double nv = n * v; // dot
   double np0 = n * Vector(p0.getX(), p0.getY(), p0.getZ());
-  if (compare_doubles(nv, 0.0)) {
+
+  // Scale for "n·v" should reflect |n|·|v|
+  double nv_scale = std::sqrt((n * n) * (v * v));
+  if (approx_zero(nv, nv_scale)) {
+    double s_scale = std::max(1.0, std::fabs(s)); // scale approx |s| or 1
     // Line is parallel to plane
-    if (compare_doubles(np0 - s, 0.0)) {
+    if (approx_zero(np0 - s, s_scale)) {
       // Complanar case, on one plane
       std::optional<Segment> result = intersection_triangle_line_on_plane(t, l);
       if (result)
@@ -345,7 +350,6 @@ bool intersection_triangle_segment(const Triangle &t, const Segment &s) {
   }
 
   Line l = s.findLine();
-  l.print(std::cout);
   std::optional<Segment> opt_res = intersection_triangle_line(t, l);
   if (!opt_res)
     return false;

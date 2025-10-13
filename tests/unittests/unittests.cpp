@@ -1035,6 +1035,15 @@ TEST(TriangleTests, intersection_2trianglesTest) {
     bool result = intersection_2triangles(t1, t2);
     ASSERT_EQ(result, false);
   }
+
+  // 44
+  {
+    SCOPED_TRACE("case 45");
+    Triangle t1 = Triangle(Point(1, 1, 0), Point(3, 1, 0), Point(1, 3, 0));
+    Triangle t2 = Triangle(Point(1, 1, 0),  Point(1, 2, 3), Point(5, 4, 8));
+    bool result = intersection_2triangles(t1, t2);
+    ASSERT_EQ(result, true);
+  }
 }
 
 int main(int argc, char **argv) {

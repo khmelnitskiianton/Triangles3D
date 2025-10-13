@@ -46,15 +46,16 @@ std::pair<LineToLineOrientation, Point> intersection_2lines(const Line &l1, cons
   Vector diff_points = vec_from_points(p1, p2); // p2 - p1 vector
 
   // Case Parallel
-  if (compare_doubles(norm(n), 0)) {
+  if (approx_zero(norm(n), norm(d1) * norm(d2))) {
     // Case Coincidence
-    if (compare_doubles(norm(cross_product(diff_points, d1)), 0))
+    if (approx_zero(norm(cross_product(diff_points, d1)), norm(diff_points) * norm(d1)))
       return std::make_pair(LineToLineOrientation::Coincident, Point::badPoint());
     return std::make_pair(LineToLineOrientation::Parallel, Point::badPoint());
   }
-
+  double cop = diff_points * n;
+  double cop_scale = std::max(1.0, norm(diff_points) * norm(n));
   // Case Skew
-  if (!compare_doubles(diff_points * n, 0))
+  if (!approx_zero(cop, cop_scale))
     return std::make_pair(LineToLineOrientation::Skew, Point::badPoint());
 
   // Case Intersection

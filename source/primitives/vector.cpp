@@ -47,7 +47,7 @@ Vector Vector::badVector() { return Vector(NAN, NAN, NAN); }
 bool Vector::isBad() const { return std::isnan(x_) || std::isnan(y_) || std::isnan(z_); }
 
 bool Vector::isZero() const {
-  if (compare_doubles(x_, 0) && compare_doubles(y_, 0) && compare_doubles(z_, 0))
+  if (approx_zero(x_) && approx_zero(y_) && approx_zero(z_))
     return true;
   return false;
 }
@@ -56,9 +56,15 @@ bool Vector::equal(const Vector &vec) const {
   if (vec.isBad() || this->isBad())
     return false;
 
-  if (compare_doubles(x_, vec.x_) && compare_doubles(y_, vec.y_) && compare_doubles(z_, vec.z_))
-    return true;
-  return false;
+  const double dx = x_ - vec.x_;
+  const double dy = y_ - vec.y_;
+  const double dz = z_ - vec.z_;
+  const double diff = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+  const double a_len = std::sqrt(x_ * x_ + y_ * y_ + z_ * z_);
+  const double b_len = std::sqrt(vec.x_ * vec.x_ + vec.y_ * vec.y_ + vec.z_ * vec.z_);
+  const double scale = std::max(1.0, std::max(a_len, b_len));
+  return approx_zero(diff, scale);
 }
 
 Point Vector::toPoint() const { return Point(x_, y_, z_); }
@@ -86,8 +92,16 @@ Vector operator/(const Vector &a, double scalar) { return a * (1 / scalar); }
 
 // Bool
 bool operator==(const Vector &a, const Vector &b) {
-  return (!compare_doubles(a.getX(), b.getX())) && (!compare_doubles(a.getY(), b.getY())) &&
-         (!compare_doubles(a.getZ(), b.getZ()));
+  const double dx = a.getX() - b.getX();
+  const double dy = a.getY() - b.getY();
+  const double dz = a.getZ() - b.getZ();
+  const double diff = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+  const double la = std::sqrt(a.getX() * a.getX() + a.getY() * a.getY() + a.getZ() * a.getZ());
+  const double lb = std::sqrt(b.getX() * b.getX() + b.getY() * b.getY() + b.getZ() * b.getZ());
+  const double scale = std::max(1.0, std::max(la, lb));
+
+  return approx_zero(diff, scale);
 }
 
 bool operator!=(const Vector &a, const Vector &b) { return !(a == b); }
@@ -99,7 +113,7 @@ double norm2(const Vector &v) { return v * v; }
 
 Vector normalize(const Vector &v) {
   double n = norm(v);
-  if (compare_doubles(n, 0))
+  if (approx_zero(n))
     return Vector::badVector();
   return v / norm(v);
 }

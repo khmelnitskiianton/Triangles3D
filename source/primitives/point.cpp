@@ -14,7 +14,7 @@ Point Point::badPoint() { return Point(NAN, NAN, NAN); }
 bool Point::isBad() const { return std::isnan(x_) || std::isnan(y_) || std::isnan(z_); }
 
 bool equal(const Point &p1, const Point &p2) {
-  return compare_doubles(p1.getX(), p2.getX()) && compare_doubles(p1.getY(), p2.getY()) && compare_doubles(p1.getZ(), p2.getZ());
+  return approx_equal(p1.getX(), p2.getX()) && approx_equal(p1.getY(), p2.getY()) && approx_equal(p1.getZ(), p2.getZ());
 }
 
 Vector vec_from_points(const Point &a, const Point b) {
@@ -26,10 +26,9 @@ Vector vec_from_points(const Point &a, const Point b) {
 
 // Bool
 bool operator==(const Point &a, const Point &b) {
-  return (compare_doubles(a.getX(), b.getX())) && (compare_doubles(a.getY(), b.getY())) && (compare_doubles(a.getZ(), b.getZ()));
+  return (approx_equal(a.getX(), b.getX())) && (approx_equal(a.getY(), b.getY())) && (approx_equal(a.getZ(), b.getZ()));
 }
 
 bool operator!=(const Point &a, const Point &b) {
-  return (!compare_doubles(a.getX(), b.getX())) || (!compare_doubles(a.getY(), b.getY())) ||
-         (!compare_doubles(a.getZ(), b.getZ()));
+  return (!approx_equal(a.getX(), b.getX())) || (!approx_equal(a.getY(), b.getY())) || (!approx_equal(a.getZ(), b.getZ()));
 }

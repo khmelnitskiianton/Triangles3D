@@ -20,9 +20,9 @@ Plane::Plane(const Point &p1, const Point &p2, const Point &p3) {
 
 PlaneSide Plane::pointPosition(const Point &x) const {
   double d = n_ * (x - p_);
-  if (compare_doubles(d, 0))
+  if (approx_zero(d))
     return PlaneSide::BelongsToPlane;
-  else if (d > 0)
+  else if (ge_approx(d, 0.0))
     return PlaneSide::PositiveHalfSpace;
   else
     return PlaneSide::NegativeHalfSpace;
@@ -55,16 +55,21 @@ std::pair<PlaneToPlaneOrientation, Line> intersection_2planes(const Plane &p1, c
 
   Vector line_n = cross_product(n1, n2);
 
+  double l1 = norm(n1);
+  double l2 = norm(n2);
+
+  if (approx_zero(l1) || approx_zero(l2)) {
+    return std::make_pair(PlaneToPlaneOrientation::Invalid, Line::badLine());
+  }
+
   // Case Parallel
-  if (compare_doubles(norm(line_n), 0)) {
-    double l1 = norm(n1);
-    double l2 = norm(n2);
+  if (approx_zero(norm(line_n), l1 * l1)) {
     double c = (n1 * n2) / (l1 * l2);
-    double sign = (c >= 0.0) ? 1.0 : -1.0;
+    double sign = ge_approx(c, 0.0) ? 1.0 : -1.0;
     double d1 = s1 / l1;
     double d2 = (sign * s2) / l2;
     // Case Coincidence
-    if (compare_doubles(d1, d2))
+    if (approx_equal(d1, d2))
       return std::make_pair(PlaneToPlaneOrientation::Coincident, Line::badLine());
     return std::make_pair(PlaneToPlaneOrientation::Parallel, Line::badLine());
   }
