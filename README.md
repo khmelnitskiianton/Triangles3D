@@ -11,3 +11,54 @@
 
 Docs for geometry in [docs](docs/)
 
+## Dependencies
+
+Compiler c/c++(clang preferable), cmake, python, gtest
+
+```shell
+apt-get install build-essential clang ninja-build make cmake python3
+apt-get install libgtest-dev libgmock-dev libtbb-dev
+```
+
+## Building
+
+### Config
+
+*Debug:*
+```shell
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++ -S . -B build
+```
+
+*Release:*
+```shell
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -S . -B build
+```
+
+### Build
+```shell
+cmake --build build
+```
+
+Binaries are located in `build/bin/triangles`
+
+## Tests
+
+Google Tests, for run do:
+
+```shell
+ctest --test-dir build/tests/unittests --output-on-failure
+```
+
+Python Tests, for run do:
+
+```shell
+python3 tests/e2e/run.py --bin build/bin/triangles
+```
+
+## Workflow
+
+Pipeline runs in 2 stages:
+- `build`: debug build project & create artifact.
+- `tests`: run tests for build
+    + `UnitTests`: tests/unittests run with GTest
+    + `End2EndTests`tests/e2e run with Python
