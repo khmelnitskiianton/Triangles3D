@@ -55,10 +55,12 @@ Python Tests, for run do:
 python3 tests/e2e/run.py --bin build/bin/triangles
 ```
 
+Useful archive with tests set and script for run triangles - `tests/e2e.tar.gz`
+
 ## Workflow
 
 Pipeline runs in 2 stages:
 - `build`: debug build project & create artifact.
 - `tests`: run tests for build
     + `UnitTests`: tests/unittests run with GTest
-    + `End2EndTests`tests/e2e run with Python
+    + `End2EndTests`: tests/e2e run with Python
