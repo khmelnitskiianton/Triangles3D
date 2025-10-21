@@ -2,7 +2,7 @@
 
 [![MIPT](https://img.shields.io/endpoint?style=plastic&url=https%3A%2F%2Fraw.githubusercontent.com%2Fkhmelnitskiianton%2FTriangles3D%2Fmain%2F.github%2Fbadge%2Fmipt-badge.json)](#)
 
-[![License](https://img.shields.io/github/license/khmelnitskiianton/mega-humidifier)](#)
+[![License](https://img.shields.io/github/license/khmelnitskiianton/Triangles3D)](#)
 [![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?logo=github-actions&logoColor=white)](#)
 
 [![C++](https://img.shields.io/badge/C++-%2300599C.svg?logo=c%2B%2B&logoColor=white)](#)
