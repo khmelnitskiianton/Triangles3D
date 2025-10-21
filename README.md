@@ -1,6 +1,6 @@
 # Triangles3D
 
-[![MIPT](https://img.shields.io/endpoint?style=plastic&url=https%3A%2F%2Fraw.githubusercontent.com%2Fkhmelnitskiianton%2FCache%2Fmain%2F.github%2Fbadge%2Fmipt-badge.json)](#)
+[![MIPT](https://img.shields.io/endpoint?style=plastic&url=https%3A%2F%2Fraw.githubusercontent.com%2Fkhmelnitskiianton%2FTriangles3D%2Fmain%2F.github%2Fbadge%2Fmipt-badge.json)](#)
 
 [![License](https://img.shields.io/github/license/khmelnitskiianton/mega-humidifier)](#)
 [![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?logo=github-actions&logoColor=white)](#)
@@ -22,11 +22,15 @@ apt-get install libgtest-dev libgmock-dev libtbb-dev
 
 ## Building
 
+Using CMake, you can specify 2 options:
+- `SANITIZE`: enables sanitizers for gcc/clang compilers.
+- `BUILD_TESTS`: build unit tests with GTest.
+
 ### Config
 
 *Debug:*
 ```shell
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++ -S . -B build
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DSANITIZE=ON -DCMAKE_CXX_COMPILER=clang++ -S . -B build
 ```
 
 *Release:*
@@ -39,7 +43,13 @@ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -S . -B b
 cmake --build build
 ```
 
-Binaries are located in `build/bin/triangles`
+Binaries are located in `build/bin/`
+
+### Install 
+
+```shell
+cmake --install build --prefix ~/my_software
+```
 
 ## Usage
 

@@ -1,6 +1,6 @@
 enable_testing()
-
 find_package(GTest REQUIRED)
+include(GoogleTest)
 
 add_executable(unittests 
   unittests.cpp
@@ -14,27 +14,33 @@ add_executable(unittests
   ${PROJECT_SOURCE_DIR}/source/primitives/common.cpp
   ${PROJECT_SOURCE_DIR}/source/primitives/segment.cpp
 )
-target_include_directories(unittests PUBLIC "${PROJECT_SOURCE_DIR}/include")
-target_compile_options(unittests PRIVATE
-    $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:
-        # Warnings
-        -Wall -Wextra -Werror
-        # Sanitizers 
-        -fsanitize=address,undefined,leak,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr
-    >
-)
-target_link_options(unittests PRIVATE
-    $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:
-        # Sanitizers
-        -fsanitize=address,undefined,leak,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr
-    >
-)
 
+target_include_directories(unittests PUBLIC "${PROJECT_SOURCE_DIR}/include")
 target_link_libraries(
     unittests 
     PRIVATE
     GTest::gtest
 )
 
-include(GoogleTest)
+if (MSVC)
+    target_compile_options(unittests PRIVATE
+        # Warnings
+        /W4
+        /WX
+    )
+else()
+    target_compile_options(unittests PRIVATE
+        # Warnings
+        -Wall 
+        -Wextra 
+        -Werror
+        # Sanitizers
+        $<$<BOOL:${SANITIZE}>:-fsanitize=address,undefined,leak,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr>
+    )
+    target_link_options(unittests PRIVATE
+        # Sanitizers
+        $<$<BOOL:${SANITIZE}>:-fsanitize=address,undefined,leak,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr>
+    )
+endif()
+
 gtest_discover_tests(unittests)
