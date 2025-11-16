@@ -1,18 +1,20 @@
 # Triangles3D
 
 <p align="center">
-  <a href="https://github.com/khmelnitskiianton/Triangles3D/actions">
-    <img src="https://img.shields.io/github/actions/workflow/status/khmelnitskiianton/Triangles3D/.github/workflows/build.yml?style=for-the-badge"
-         alt="Build Status" />
-  </a>&emsp;
-  <a href="#">
-    <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fkhmelnitskiianton%2FTriangles3D%2Fmain%2F.github%2Fbadge%2Fmipt-badge.json&style=for-the-badge"
-         alt="MIPT" />
-  </a>&emsp;
-  <a href="LICENSE">
-    <img src="https://img.shields.io/github/license/khmelnitskiianton/Triangles3D?style=for-the-badge"
-         alt="License" />
-  </a>
+  <img
+    src="https://img.shields.io/github/actions/workflow/status/khmelnitskiianton/Triangles3D/.github/workflows/build.yml?style=for-the-badge"
+    alt="Build Status"
+  />
+  &emsp;
+  <img
+    src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fkhmelnitskiianton%2FTriangles3D%2Fmain%2F.github%2Fbadge%2Fmipt-badge.json&style=for-the-badge"
+    alt="MIPT"
+  />
+  &emsp;
+  <img
+    src="https://img.shields.io/github/license/khmelnitskiianton/Triangles3D?style=for-the-badge"
+    alt="License"
+  />
 </p>
 
 <p align="center">
