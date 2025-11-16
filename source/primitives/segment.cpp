@@ -1,13 +1,13 @@
 #include <algorithm>
 #include <iostream>
 
-#include "primitives/common.hpp"
+#include "common.hpp"
 #include "primitives/line.hpp"
 #include "primitives/point.hpp"
 #include "primitives/segment.hpp"
 #include "primitives/vector.hpp"
 
-void Segment::print(std::ostream &out) const {
+void Segment::print(std::ostream &out) const noexcept {
   out << "a: ";
   a_.print(out);
   out << " b: ";
@@ -17,12 +17,7 @@ void Segment::print(std::ostream &out) const {
 
 Segment Segment::badSegment() { return Segment(Point::badPoint(), Point::badPoint()); }
 
-bool Segment::isBad() const { return a_.isBad() || b_.isBad(); }
-
-bool Segment::isInclude(const Point &p) const {
-  if (p.isBad())
-    return false;
-
+bool Segment::isInclude(const Point &p) const noexcept {
   if (this->isDegenerate())
     return a_ == p;
 
@@ -37,13 +32,8 @@ bool Segment::isInclude(const Point &p) const {
   return true;
 }
 
-bool Segment::isDegenerate() const {
-  if (this->isBad())
-    return false;
-  return a_ == b_;
-}
 
-bool equal(const Segment &s1, const Segment &s2) {
+bool equal(const Segment &s1, const Segment &s2) noexcept {
   Point a = s1.getA(), b = s1.getB(), c = s2.getA(), d = s2.getB();
   Vector v = vec_from_points(a, b);
   Vector ac = vec_from_points(a, c);

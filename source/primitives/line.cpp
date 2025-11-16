@@ -1,37 +1,17 @@
 #include <iostream>
 #include <utility>
 
-#include "primitives/common.hpp"
+#include "common.hpp"
 #include "primitives/line.hpp"
 #include "primitives/point.hpp"
 #include "primitives/vector.hpp"
 
-void Line::print(std::ostream &out) const {
+void Line::print(std::ostream &out) const noexcept {
   out << "p: ";
   p_.print(out);
   out << ", d: ";
   d_.print(out);
   out << std::endl;
-}
-
-Line Line::badLine() { return Line(Point::badPoint(), Vector::badVector()); }
-
-bool Line::isBad() const { return p_.isBad() || d_.isBad(); }
-
-bool Line::isDegenerate() const {
-  if (this->isBad())
-    return false;
-  return d_.isZero();
-}
-
-bool equal(const Line &l1, const Line &l2) {
-  if (l1.isBad() || l2.isBad())
-    return false;
-  if (!cross_product(l1.getD(), l2.getD()).isZero())
-    return false;
-  if (!cross_product(vec_from_points(l1.getP(), l2.getP()), l1.getD()).isZero())
-    return false;
-  return true;
 }
 
 std::pair<LineToLineOrientation, Point> intersection_2lines(const Line &l1, const Line &l2) {

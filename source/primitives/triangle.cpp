@@ -1,17 +1,20 @@
+#include <algorithm>
 #include <array>
 #include <iostream>
 #include <optional>
 #include <variant>
 
-#include "primitives/common.hpp"
+#include "common.hpp"
+#include "octtree/bounding_box.hpp"
+#include "octtree/bounding_sphere.hpp"
 #include "primitives/line.hpp"
 #include "primitives/plane.hpp"
 #include "primitives/point.hpp"
 #include "primitives/segment.hpp"
+#include "primitives/triangle.hpp"
 #include "primitives/vector.hpp"
-#include "triangle.hpp"
 
-void Triangle::print(std::ostream &out) const {
+void Triangle::print(std::ostream &out) const noexcept {
   out << "a: ";
   a_.print(out);
   out << ", b: ";
@@ -21,13 +24,20 @@ void Triangle::print(std::ostream &out) const {
   out << std::endl;
 }
 
-Triangle Triangle::badTriangle() { return Triangle(Point::badPoint(), Point::badPoint(), Point::badPoint()); }
+BoundingSphere Triangle::getBoundingSphere() const noexcept {
+  const Vector a = a_.toVector();
+  const Vector b = b_.toVector();
+  const Vector c = c_.toVector();
 
-bool Triangle::isBad() const { return a_.isBad() || b_.isBad() || c_.isBad(); }
+  // просто возьмём центр масс и радиус как макс. расстояние до вершин
+  const Vector center = (a + b + c) * (1.0 / 3.0);
+  const double r = std::max({distance(a.toPoint(), center.toPoint()), distance(b.toPoint(), center.toPoint()),
+                             distance(c.toPoint(), center.toPoint())});
+  return BoundingSphere(center, r);
+}
 
-bool Triangle::isInclude(const Point &p) const {
-  Plane plane = findPlane();
-  Vector n_p = plane.getN();
+bool Triangle::isInclude(const Point &p) const noexcept {
+  Vector n_p = plane_.getN();
 
   // not on a plane
   Vector ap = vec_from_points(a_, p);
@@ -50,81 +60,7 @@ bool Triangle::isInclude(const Point &p) const {
   return nonNeg || nonPos;
 }
 
-bool Triangle::isDegenerate() const {
-  // Equal points
-  if (equal(a_, b_) || equal(a_, c_) || equal(c_, b_))
-    return true;
-  // Area = 0
-  Vector ab = vec_from_points(a_, b_);
-  Vector ac = vec_from_points(a_, c_);
-  Vector n = cross_product(ab, ac);
-  return approx_zero(n * n);
-}
-
-Collapsed Triangle::collapsedTriangle() const {
-  // 1) Check degeneracy by area ~ ||(B-A) x (C-A)||^2
-  Vector AB = vec_from_points(a_, b_);
-  Vector AC = vec_from_points(a_, c_);
-  Vector n = cross_product(AB, AC);
-  double n2 = n * n;
-
-  // Proper (non-degenerate) triangle -> not collapsed
-  if (!approx_zero(n2))
-    return std::monostate{};
-
-  // 2) Degenerate: choose farthest pair among the three vertices
-  auto d2 = [&](const Point &p, const Point &q) {
-    return norm2(vec_from_points(p, q)); // squared distance
-  };
-
-  double dab = d2(a_, b_);
-  double dac = d2(a_, c_);
-  double dbc = d2(b_, c_);
-
-  const Point *p = &a_;
-  const Point *q = &b_;
-  double dmax = dab;
-
-  if (dac >= dmax) {
-    p = &a_;
-    q = &c_;
-    dmax = dac;
-  }
-  if (dbc >= dmax) {
-    p = &b_;
-    q = &c_;
-    dmax = dbc;
-  }
-
-  // 3) If even the longest edge is ~0, all points coincide -> point
-  if (approx_zero(dmax))
-    return Point(*p);
-
-  // 4) Otherwise collapsed triangle is that longest edge
-  return Segment(*p, *q);
-}
-
-Plane Triangle::findPlane() const {
-  if (this->isBad())
-    return Plane::badPlane();
-
-  double x1 = a_.getX(), y1 = a_.getY(), z1 = a_.getZ();
-  double x2 = b_.getX(), y2 = b_.getY(), z2 = b_.getZ();
-  double x3 = c_.getX(), y3 = c_.getY(), z3 = c_.getZ();
-
-  /// or [B-A x C-A]
-  double a = (y2 - y1) * (z3 - z1) - (z2 - z1) * (y3 - y1);
-  double b = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
-  double c = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
-
-  Vector n = Vector(a, b, c);
-  return Plane(a_, n);
-}
-
 std::optional<Segment> intersection_triangle_line_on_plane(const Triangle &t, const Line &l) {
-  if (t.isBad() || l.isBad())
-    return std::nullopt;
-
   Line ab = Line(t.getA(), t.getB());
   Line ac = Line(t.getA(), t.getC());
   Line bc = Line(t.getB(), t.getC());
@@ -198,16 +134,7 @@ std::optional<Segment> intersection_triangle_line_on_plane(const Triangle &t, co
 }
 
 /// This method for case intersection 2 planes
-bool intersection_2triangles_intersect_planes(const Triangle &t1, const Triangle &t2) {
-  Plane p1 = t1.findPlane();
-  Plane p2 = t2.findPlane();
-  std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-  // This method for case intersection 2 planes
-  if (inter.first != PlaneToPlaneOrientation::Intersect) {
-    return false;
-  }
-
-  Line l = inter.second;
+bool intersection_2triangles_intersect_planes(const Triangle &t1, const Triangle &t2, const Line &l) {
   std::optional<Segment> opt_seg1 = intersection_triangle_line_on_plane(t1, l);
   std::optional<Segment> opt_seg2 = intersection_triangle_line_on_plane(t2, l);
   if (!opt_seg1 || !opt_seg2)
@@ -219,14 +146,6 @@ bool intersection_2triangles_intersect_planes(const Triangle &t1, const Triangle
 
 /// This method for case 2 triangles on one plane
 bool intersection_2triangles_coincident_planes(const Triangle &t1, const Triangle &t2) {
-  Plane p1 = t1.findPlane();
-  Plane p2 = t2.findPlane();
-  std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-  // This method for case 2 triangle
-  if (inter.first != PlaneToPlaneOrientation::Coincident) {
-    return false;
-  }
-
   std::array<Point, 3> t1_arr = {t1.getA(), t1.getB(), t1.getC()};
   std::array<Point, 3> t2_arr = {t2.getA(), t2.getB(), t2.getC()};
 
@@ -253,37 +172,43 @@ bool intersection_2triangles_coincident_planes(const Triangle &t1, const Triangl
 }
 
 bool intersection_2triangles(const Triangle &t1, const Triangle &t2) {
-  Collapsed obj1 = t1.collapsedTriangle();
-  Collapsed obj2 = t2.collapsedTriangle();
+  // Raw check with AABB
+  if (!overlap(t1.getBox(), t2.getBox()))
+    return false;
+
+  // Main checking
+  Collapsed obj1 = t1.getCollapsed();
+  Collapsed obj2 = t2.getCollapsed();
+  bool monostate_1 = std::holds_alternative<std::monostate>(obj1);
+  bool monostate_2 = std::holds_alternative<std::monostate>(obj2);
   // Really triangles
-  if (std::holds_alternative<std::monostate>(obj1) && std::holds_alternative<std::monostate>(obj2)) {
-    Plane p1 = t1.findPlane();
-    Plane p2 = t2.findPlane();
+  if (monostate_1 && monostate_2) {
+    Plane p1 = t1.getPlane();
+    Plane p2 = t2.getPlane();
     std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-    if ((inter.first == PlaneToPlaneOrientation::Parallel) || (inter.first == PlaneToPlaneOrientation::Invalid))
+    switch (inter.first) {
+    case PlaneToPlaneOrientation::Parallel:
+    case PlaneToPlaneOrientation::Invalid:
       return false;
-
-    if (inter.first == PlaneToPlaneOrientation::Intersect) {
-      return intersection_2triangles_intersect_planes(t1, t2);
-    }
-
-    if (inter.first == PlaneToPlaneOrientation::Coincident) {
+    case PlaneToPlaneOrientation::Intersect:
+      return intersection_2triangles_intersect_planes(t1, t2, inter.second);
+    case PlaneToPlaneOrientation::Coincident:
       return intersection_2triangles_coincident_planes(t1, t2);
     }
   }
 
   // Triangle & Segment
-  if (std::holds_alternative<std::monostate>(obj1) && std::holds_alternative<Segment>(obj2)) {
+  if (monostate_1 && std::holds_alternative<Segment>(obj2)) {
     return intersection_triangle_segment(t1, std::get<Segment>(obj2));
   }
-  if (std::holds_alternative<std::monostate>(obj2) && std::holds_alternative<Segment>(obj1)) {
+  if (monostate_2 && std::holds_alternative<Segment>(obj1)) {
     return intersection_triangle_segment(t2, std::get<Segment>(obj1));
   }
 
   // Triangle & Point
-  if (std::holds_alternative<std::monostate>(obj1) && std::holds_alternative<Point>(obj2))
+  if (monostate_1 && std::holds_alternative<Point>(obj2))
     return t1.isInclude(std::get<Point>(obj2));
-  if (std::holds_alternative<std::monostate>(obj2) && std::holds_alternative<Point>(obj1))
+  if (monostate_2 && std::holds_alternative<Point>(obj1))
     return t2.isInclude(std::get<Point>(obj1));
 
   // Segment & Segment
@@ -307,10 +232,7 @@ bool intersection_2triangles(const Triangle &t1, const Triangle &t2) {
 }
 
 std::optional<Segment> intersection_triangle_line(const Triangle &t, const Line &l) {
-  if (t.isBad() || l.isBad())
-    return std::nullopt;
-
-  Plane pt = t.findPlane();
+  Plane pt = t.getPlane();
   Vector n = pt.getN();
   double s = pt.getS();
 
@@ -322,7 +244,7 @@ std::optional<Segment> intersection_triangle_line(const Triangle &t, const Line 
   double np0 = n * Vector(p0.getX(), p0.getY(), p0.getZ());
 
   // Scale for "n·v" should reflect |n|·|v|
-  double nv_scale = std::sqrt((n * n) * (v * v));
+  double nv_scale = n * n + v * v;
   if (approx_zero(nv, nv_scale)) {
     double s_scale = std::max(1.0, std::fabs(s)); // scale approx |s| or 1
     // Line is parallel to plane
@@ -356,4 +278,48 @@ bool intersection_triangle_segment(const Triangle &t, const Segment &s) {
 
   Segment inter_line = *opt_res;
   return intersection_2segments_on_line(inter_line, s);
+}
+
+
+Collapsed collapsedTriangle(Point a, Point b, Point c) {
+  // 1) Check degeneracy by area ~ ||(B-A) x (C-A)||^2
+  Vector AB = vec_from_points(a, b);
+  Vector AC = vec_from_points(a, c);
+  Vector n = cross_product(AB, AC);
+  double n2 = n * n;
+
+  // Proper (non-degenerate) triangle -> not collapsed
+  if (!approx_zero(n2))
+    return std::monostate{};
+
+  // 2) Degenerate: choose farthest pair among the three vertices
+  auto d2 = [&](const Point &p, const Point &q) {
+    return norm2(vec_from_points(p, q)); // squared distance
+  };
+
+  double dab = d2(a, b);
+  double dac = d2(a, c);
+  double dbc = d2(b, c);
+
+  const Point *p = &a;
+  const Point *q = &b;
+  double dmax = dab;
+
+  if (dac >= dmax) {
+    p = &a;
+    q = &c;
+    dmax = dac;
+  }
+  if (dbc >= dmax) {
+    p = &b;
+    q = &c;
+    dmax = dbc;
+  }
+
+  // 3) If even the longest edge is ~0, all points coincide -> point
+  if (approx_zero(dmax))
+    return Point(*p);
+
+  // 4) Otherwise collapsed triangle is that longest edge
+  return Segment(*p, *q);
 }

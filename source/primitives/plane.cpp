@@ -1,7 +1,7 @@
 #include <cmath>
 #include <utility>
 
-#include "primitives/common.hpp"
+#include "common.hpp"
 #include "primitives/plane.hpp"
 #include "primitives/point.hpp"
 #include "primitives/vector.hpp"
@@ -18,7 +18,7 @@ Plane::Plane(const Point &p1, const Point &p2, const Point &p3) {
   p_ = p1;
 }
 
-PlaneSide Plane::pointPosition(const Point &x) const {
+PlaneSide Plane::pointPosition(const Point &x) const noexcept {
   double d = n_ * (x - p_);
   if (approx_zero(d))
     return PlaneSide::BelongsToPlane;
@@ -28,7 +28,7 @@ PlaneSide Plane::pointPosition(const Point &x) const {
     return PlaneSide::NegativeHalfSpace;
 }
 
-void Plane::print(std::ostream &out) const {
+void Plane::print(std::ostream &out) const noexcept {
   out << "p: ";
   p_.print(out);
   out << ", n: ";
@@ -36,20 +36,7 @@ void Plane::print(std::ostream &out) const {
   out << std::endl;
 }
 
-Plane Plane::badPlane() { return Plane(Point::badPoint(), Vector::badVector()); }
-
-bool Plane::isBad() const { return p_.isBad() || n_.isBad(); }
-
-bool Plane::isDegenerate() const {
-  if (this->isBad())
-    return false;
-  return n_.isZero();
-}
-
 std::pair<PlaneToPlaneOrientation, Line> intersection_2planes(const Plane &p1, const Plane &p2) {
-  if (p1.isBad() || p2.isBad())
-    return std::make_pair(PlaneToPlaneOrientation::Invalid, Line::badLine());
-
   Vector n1 = p1.getN(), n2 = p2.getN();
   double s1 = p1.getS(), s2 = p2.getS();
 

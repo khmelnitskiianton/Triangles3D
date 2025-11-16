@@ -9,7 +9,9 @@
 [![CMake](https://img.shields.io/badge/CMake-064F8C?logo=cmake&logoColor=fff)](#)
 [![Markdown](https://img.shields.io/badge/Markdown-%23000000.svg?logo=markdown&logoColor=white)](#)
 
-Docs for geometry in [docs](docs/)
+Project of simulation 3D triangles intersection.
+
+Docs for geometry and octree in [docs](docs/)
 
 ## Dependencies
 

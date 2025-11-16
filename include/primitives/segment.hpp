@@ -14,21 +14,20 @@ class Segment {
     Segment(const Segment &s) : a_(s.a_), b_(s.b_) {}
 
     static Segment badSegment();
-    bool isBad() const;
+    inline bool isBad() const noexcept { return a_.isBad() || b_.isBad(); }
 
-    Point getA() const { return a_; }
-    Point getB() const { return b_; }
+    inline Point getA() const noexcept { return a_; }
+    inline Point getB() const noexcept { return b_; }
 
-    Line findLine() const { return Line(a_, b_); }
+    inline Line findLine() const noexcept { return Line(a_, b_); }
 
-    bool isInclude(const Point &p) const;
+    bool isInclude(const Point &p) const noexcept;
 
-    bool isDegenerate() const;
-
-    void print(std::ostream &out) const;
+    bool isDegenerate() const noexcept { return a_ == b_; }
+    void print(std::ostream &out) const noexcept;
 };
 
-bool equal(const Segment &s1, const Segment &s2);
+bool equal(const Segment &s1, const Segment &s2) noexcept;
 
 /// Intersection of 2 segments lying on one line(also degenerated cases)
 bool intersection_2segments_on_line(const Segment &s1, const Segment &s2);

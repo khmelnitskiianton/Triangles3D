@@ -23,21 +23,22 @@ class Plane {
     Plane(const Point &p, const Vector &n) : p_(p), n_(n) {}
     Plane(const Point &p1, const Point &p2, const Point &p3);
 
-    static Plane badPlane();
-    bool isBad() const;
+    static inline Plane badPlane() noexcept { return Plane(Point::badPoint(), Vector::badVector()); }
 
-    bool isDegenerate() const;
+    inline bool isBad() const noexcept { return p_.isBad() || n_.isBad(); }
 
-    Point getP() const { return p_; }
-    Vector getN() const { return n_; }
+    inline bool isDegenerate() const noexcept { return n_.isZero(); }
+
+    inline Point getP() const noexcept { return p_; }
+    inline Vector getN() const noexcept { return n_; }
 
     /// get scalar value for n*P
-    double getS() const { return n_ * p_; }
+    inline double getS() const noexcept { return n_ * p_; }
 
-    void print(std::ostream &out) const;
+    void print(std::ostream &out) const noexcept;
 
     // Methods
-    PlaneSide pointPosition(const Point &x) const;
+    PlaneSide pointPosition(const Point &x) const noexcept;
 };
 
 std::pair<PlaneToPlaneOrientation, Line> intersection_2planes(const Plane &p1, const Plane &p2);

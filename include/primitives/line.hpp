@@ -18,17 +18,26 @@ class Line {
     Line(const Point &p, const Vector &d) : p_(p), d_(d) {}
     Line(const Point &p1, const Point &p2) : p_(p1), d_(Vector(p1, p2)) {}
 
-    static Line badLine();
-    bool isBad() const;
+    static inline Line badLine() noexcept { return Line(Point::badPoint(), Vector::badVector()); }
+    inline bool isBad() const noexcept { return p_.isBad() || d_.isBad(); }
 
-    bool isDegenerate() const;
+    inline bool isDegenerate() const noexcept { return d_.isZero(); }
+
     /// Getters
-    Point getP() const { return p_; }
-    Vector getD() const { return d_; }
-    void print(std::ostream &out) const;
+    inline Point getP() const noexcept { return p_; }
+    inline Vector getD() const noexcept { return d_; }
+
+    void print(std::ostream &out) const noexcept;
 };
 
-bool equal(const Line &l1, const Line &l2);
+inline bool equal(const Line &l1, const Line &l2) noexcept {
+  if (!cross_product(l1.getD(), l2.getD()).isZero())
+    return false;
+  if (!cross_product(vec_from_points(l1.getP(), l2.getP()), l1.getD()).isZero())
+    return false;
+  return true;
+}
+
 std::pair<LineToLineOrientation, Point> intersection_2lines(const Line &l1, const Line &l2);
 
 #endif

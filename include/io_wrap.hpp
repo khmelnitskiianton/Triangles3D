@@ -1,5 +1,5 @@
-#ifndef INCLUDE_IO_WRAP_HPP
-#define INCLUDE_IO_WRAP_HPP
+#ifndef _INCLUDE_IO_WRAP_HPP
+#define _INCLUDE_IO_WRAP_HPP
 
 #include <fstream>
 
