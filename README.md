@@ -1,21 +1,33 @@
 # Triangles3D
 
-[![MIPT](https://img.shields.io/endpoint?style=plastic&url=https%3A%2F%2Fraw.githubusercontent.com%2Fkhmelnitskiianton%2FTriangles3D%2Fmain%2F.github%2Fbadge%2Fmipt-badge.json)](#)
+<p align="center">
+  <a href="https://github.com/khmelnitskiianton/Triangles3D/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/khmelnitskiianton/Triangles3D/ci.yml?style=for-the-badge"
+         alt="Build Status" />
+  </a>&emsp;
+  <a href="#">
+    <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fkhmelnitskiianton%2FTriangles3D%2Fmain%2F.github%2Fbadge%2Fmipt-badge.json&style=for-the-badge"
+         alt="MIPT" />
+  </a>&emsp;
+  <a href="LICENSE">
+    <img src="https://img.shields.io/github/license/khmelnitskiianton/Triangles3D?style=for-the-badge"
+         alt="License" />
+  </a>
+</p>
 
-[![License](https://img.shields.io/github/license/khmelnitskiianton/Triangles3D)](#)
-[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?logo=github-actions&logoColor=white)](#)
-
-[![C++](https://img.shields.io/badge/C++-%2300599C.svg?logo=c%2B%2B&logoColor=white)](#)
-[![CMake](https://img.shields.io/badge/CMake-064F8C?logo=cmake&logoColor=fff)](#)
-[![Markdown](https://img.shields.io/badge/Markdown-%23000000.svg?logo=markdown&logoColor=white)](#)
+<p align="center">
+  <img src="https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++" />&emsp;
+  <img src="https://img.shields.io/badge/CMake-064F8C?style=for-the-badge&logo=cmake&logoColor=white" alt="CMake" />&emsp;
+  <img src="https://img.shields.io/badge/Markdown-000000?style=for-the-badge&logo=markdown&logoColor=white" alt="Markdown" />
+</p>
 
 Project of simulation 3D triangles intersection.
 
-Docs for geometry and octree in [docs](docs/)
+Docs for geometry, BVH and speed up tips in [docs](docs/)
 
 ## Dependencies
 
-Compiler c/c++(clang preferable), cmake, python, gtest
+Compiler c/c++, cmake, python, gtest
 
 ```shell
 apt-get install build-essential clang ninja-build make cmake python3
@@ -32,12 +44,12 @@ Using CMake, you can specify 2 options:
 
 *Debug:*
 ```shell
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DSANITIZE=ON -DCMAKE_CXX_COMPILER=clang++ -S . -B build
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DSANITIZE=ON -S . -B build
 ```
 
 *Release:*
 ```shell
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -S . -B build
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -S . -B build
 ```
 
 ### Build
@@ -95,6 +107,55 @@ python3 tests/e2e/run.py --bin build/bin/triangles
 ```
 
 Useful archive with tests set and script for run triangles - `tests/e2e.tar.gz`
+
+## Project Structure
+
+```
+Triangles3D/
+├── CMakeLists.txt
+├── docs
+│   ├── GeometryToolsForComputerGraphics.pdf
+│   ├── README.md
+│   └── TriangleIntersectionAlgorithm.pdf
+├── include
+│   ├── common.hpp
+│   ├── io_wrap.hpp
+│   ├── octtree
+│   │   ├── bounding_box.hpp
+│   │   ├── bounding_sphere.hpp
+│   │   └── octtree.hpp
+│   └── primitives
+│       ├── line.hpp
+│       ├── plane.hpp
+│       ├── point.hpp
+│       ├── segment.hpp
+│       ├── triangle.hpp
+│       └── vector.hpp
+├── LICENSE
+├── README.md
+├── source
+│   ├── CMakeLists.txt
+│   ├── main.cpp
+│   ├── octtree
+│   │   ├── bounding_box.cpp
+│   │   ├── bounding_sphere.cpp
+│   │   └── octtree.cpp
+│   └── primitives
+│       ├── line.cpp
+│       ├── plane.cpp
+│       ├── point.cpp
+│       ├── segment.cpp
+│       ├── triangle.cpp
+│       └── vector.cpp
+└── tests
+    ├── e2e
+    │   ├── keys
+    │   ├── run.py
+    │   └── tests
+    └── unittests
+        ├── CMakeLists.txt
+        └── unittests.cpp
+```
 
 ## Workflow
 

@@ -14,7 +14,7 @@ namespace Tree {
 class OctTree {
     // 1x1x1 with powers of 2(to divide by 2)
     static constexpr int SIDE_MIN_SIZE = 1;
-    static constexpr int MIN_PRIMS_PER_LEAF = 8;
+    static constexpr int MIN_PRIMS_PER_LEAF = 64;
     using TriIndex = size_t;
     class Node {
         BoundingBox region_; // bounding region
