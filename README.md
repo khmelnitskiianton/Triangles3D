@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/khmelnitskiianton/Triangles3D/actions">
-    <img src="https://img.shields.io/github/actions/workflow/status/khmelnitskiianton/Triangles3D/ci.yml?style=for-the-badge"
+    <img src="https://img.shields.io/github/actions/workflow/status/khmelnitskiianton/Triangles3D/.github/workflows/build.yml?style=for-the-badge"
          alt="Build Status" />
   </a>&emsp;
   <a href="#">
