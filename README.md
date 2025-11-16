@@ -2,11 +2,6 @@
 
 <p align="center">
   <img
-    src="https://img.shields.io/github/actions/workflow/status/khmelnitskiianton/Triangles3D/.github/workflows/build.yml?style=for-the-badge"
-    alt="Build Status"
-  />
-  &emsp;
-  <img
     src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fkhmelnitskiianton%2FTriangles3D%2Fmain%2F.github%2Fbadge%2Fmipt-badge.json&style=for-the-badge"
     alt="MIPT"
   />
@@ -14,6 +9,11 @@
   <img
     src="https://img.shields.io/github/license/khmelnitskiianton/Triangles3D?style=for-the-badge"
     alt="License"
+  />
+  &emsp;
+  <img
+    src="https://img.shields.io/github/actions/workflow/status/khmelnitskiianton/Triangles3D/.github/workflows/build.yml?style=for-the-badge"
+    alt="Build Status"
   />
 </p>
 
