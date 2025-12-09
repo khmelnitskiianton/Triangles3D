@@ -23,7 +23,9 @@
   <img src="https://img.shields.io/badge/Markdown-000000?style=for-the-badge&logo=markdown&logoColor=white" alt="Markdown" />
 </p>
 
-![](.github/images/scene.gif)
+<p align="center">
+  <img src=".github/images/scene.gif" width="500" />
+</p>
 
 Project of simulation 3D triangles intersection with C++ on OpenGL
 
@@ -86,8 +88,6 @@ Format of input (stdin): amount of triangles, next for each triangle pass 3 poin
 8 8 8 8 8 8 -10 8 8
 ```
 
-
-
 **triangles** format of output: id's of triangles that has intersection (each on new line)
 
 ```
@@ -101,7 +101,9 @@ Format of input (stdin): amount of triangles, next for each triangle pass 3 poin
 
 **triangles-3d** format of output:
 
-![](.github/images/inter1.png)
+<p align="center">
+  <img src=".github/images/inter1.png" width="600" />
+</p>
 
 ## Tests
 
