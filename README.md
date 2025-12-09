@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src=".github/images/scene.gif" width="500" />
+  <img src=".github/images/scene.gif" width="600" />
 </p>
 
 Project of simulation 3D triangles intersection with C++ on OpenGL
