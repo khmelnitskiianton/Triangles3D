@@ -128,10 +128,16 @@ Triangles3D/
 ├── CMakeLists.txt
 ├── docs
 │   ├── GeometryToolsForComputerGraphics.pdf
-│   ├── README.md
+│   ├── README_GEOMETRY.md
+│   ├── README_GRAPHIC.md
+│   ├── README_OCTREE.md
 │   └── TriangleIntersectionAlgorithm.pdf
 ├── include
 │   ├── common.hpp
+│   ├── graphic
+│   │   ├── camera.h
+│   │   ├── renderer.h
+│   │   └── shader.h
 │   ├── io_wrap.hpp
 │   ├── octtree
 │   │   ├── bounding_box.hpp
@@ -146,14 +152,21 @@ Triangles3D/
 │       └── vector.hpp
 ├── LICENSE
 ├── README.md
+├── shaders
+│   ├── direct_lighting.fs
+│   └── direct_lighting.vs
 ├── source
 │   ├── CMakeLists.txt
+│   ├── main_graphic.cpp
 │   └── main.cpp
 └── tests
     ├── e2e
+    │   ├── 13.dat
+    │   ├── 5.dat
     │   ├── keys
     │   ├── run.py
     │   └── tests
+    ├── e2e.tar.gz
     └── unittests
         ├── CMakeLists.txt
         └── unittests.cpp
