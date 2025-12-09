@@ -23,9 +23,11 @@
   <img src="https://img.shields.io/badge/Markdown-000000?style=for-the-badge&logo=markdown&logoColor=white" alt="Markdown" />
 </p>
 
-Project of simulation 3D triangles intersection.
+![](.github/images/scene.gif)
 
-Docs for geometry, BVH and speed up tips in [docs](docs/)
+Project of simulation 3D triangles intersection with C++ on OpenGL
+
+> Docs for graphics, geometry, BVH and speed up tips in [docs](docs/)
 
 ## Dependencies
 
@@ -41,6 +43,7 @@ apt-get install libgtest-dev libgmock-dev libtbb-dev
 Using CMake, you can specify 2 options:
 - `SANITIZE`: enables sanitizers for gcc/clang compilers.
 - `BUILD_TESTS`: build unit tests with GTest.
+- `GRAPHIC`: add target with graphical 3D simulation of triangles
 
 ### Config
 
@@ -51,7 +54,7 @@ cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUI
 
 *Release:*
 ```shell
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -S . -B build
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAPHIC=ON -S . -B build
 ```
 
 ### Build
@@ -83,7 +86,9 @@ Format of input (stdin): amount of triangles, next for each triangle pass 3 poin
 8 8 8 8 8 8 -10 8 8
 ```
 
-Format of output: id's of triangles that has intersection (each on new line)
+
+
+**triangles** format of output: id's of triangles that has intersection (each on new line)
 
 ```
 0
@@ -93,6 +98,10 @@ Format of output: id's of triangles that has intersection (each on new line)
 4
 5
 ```
+
+**triangles-3d** format of output:
+
+![](.github/images/inter1.png)
 
 ## Tests
 
