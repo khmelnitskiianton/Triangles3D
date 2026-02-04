@@ -20,6 +20,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++" />&emsp;
   <img src="https://img.shields.io/badge/CMake-064F8C?style=for-the-badge&logo=cmake&logoColor=white" alt="CMake" />&emsp;
+  <img src="https://img.shields.io/badge/OpenGL-API-064F8C?style=for-the-badge&logo=opengl&logoColor=white" alt="CMake" />&emsp;
   <img src="https://img.shields.io/badge/Markdown-000000?style=for-the-badge&logo=markdown&logoColor=white" alt="Markdown" />
 </p>
 
@@ -36,22 +37,23 @@ Project of simulation 3D triangles intersection with C++ on OpenGL
 Compiler c/c++, cmake, python, gtest
 
 ```shell
-apt-get install build-essential clang ninja-build make cmake python3
-apt-get install libgtest-dev libgmock-dev libtbb-dev
+apt-get install build-essential clang ninja-build make cmake python3 # necessary packages
+apt-get install libgtest-dev libgmock-dev libtbb-dev # GTest
+apt-get install libglfw3-dev libglm-dev python3 # OpenGL
 ```
 
 ## Building
 
-Using CMake, you can specify 2 options:
+Using CMake, you can specify 3 options:
+- `GRAPHIC`: add target with graphical 3D simulation of triangles
 - `SANITIZE`: enables sanitizers for gcc/clang compilers.
 - `BUILD_TESTS`: build unit tests with GTest.
-- `GRAPHIC`: add target with graphical 3D simulation of triangles
 
 ### Config
 
 *Debug:*
 ```shell
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DSANITIZE=ON -S . -B build
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DSANITIZE=ON -DGRAPHIC=ON -S . -B build
 ```
 
 *Release:*
