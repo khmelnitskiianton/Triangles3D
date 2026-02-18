@@ -6,96 +6,133 @@
 #include <cmath>
 #include <iostream>
 
-class Vector {
-    double x_ = NAN;
-    double y_ = NAN;
-    double z_ = NAN;
+template <typename T> struct Vector {
+    T x_;
+    T y_;
+    T z_;
 
-  public:
-    Vector(const Vector &v) : x_(v.x_), y_(v.y_), z_(v.z_) {}
-    Vector(double x, double y, double z) : x_(x), y_(y), z_(z) {}
+    Vector() noexcept : x_(T(0)), y_(T(0)), z_(T(0)) {}
+    Vector(const T &x, const T &y, const T &z) noexcept : x_(x), y_(y), z_(z) {}
 
     /// Vector(a, b), a - begin point, b - end point
-    Vector(const Point &a, const Point &b) noexcept;
+    Vector(const Point<T> &a, const Point<T> &b) noexcept {
+      x_ = b.x_ - a.x_;
+      y_ = b.y_ - a.y_;
+      z_ = b.z_ - a.z_;
+    }
 
-    Vector() noexcept = default;
-    Vector &operator=(const Vector &v) noexcept = default;
-
-    /// Getters
-    inline double getX() const noexcept { return x_; }
-    inline double getY() const noexcept { return y_; }
-    inline double getZ() const noexcept { return z_; }
-
-    static inline Vector badVector() noexcept { return Vector(NAN, NAN, NAN); }
-
-    inline bool isBad() const noexcept { return std::isnan(x_) || std::isnan(y_) || std::isnan(z_); }
+    static Vector badVector() noexcept {
+      return Vector(std::numeric_limits<T>::quiet_NaN(), std::numeric_limits<T>::quiet_NaN(),
+                    std::numeric_limits<T>::quiet_NaN());
+    }
+    bool isBad() const noexcept { return std::isnan(x_) || std::isnan(y_) || std::isnan(z_); }
 
     /// Methods
-    void print(std::ostream &out) const noexcept;
+    void print(std::ostream &out) const noexcept { out << "v{" << x_ << ", " << y_ << ", " << z_ << "}"; }
 
-    inline bool isZero() const noexcept { return approx_zero(x_) && approx_zero(y_) && approx_zero(z_); }
+    bool isZero() const noexcept { return approx_zero(x_) && approx_zero(y_) && approx_zero(z_); }
 
-    inline bool equal(const Vector &vec) const noexcept {
-      const double dx = x_ - vec.x_;
-      const double dy = y_ - vec.y_;
-      const double dz = z_ - vec.z_;
-      const double diff = std::sqrt(dx * dx + dy * dy + dz * dz);
+    bool equal(const Vector &vec) const noexcept {
+      const T dx = x_ - vec.x_;
+      const T dy = y_ - vec.y_;
+      const T dz = z_ - vec.z_;
+      const T diff = std::sqrt(dx * dx + dy * dy + dz * dz);
 
-      const double a_len = std::sqrt(x_ * x_ + y_ * y_ + z_ * z_);
-      const double b_len = std::sqrt(vec.x_ * vec.x_ + vec.y_ * vec.y_ + vec.z_ * vec.z_);
-      const double scale = std::max(1.0, std::max(a_len, b_len));
+      const T a_len = std::sqrt(x_ * x_ + y_ * y_ + z_ * z_);
+      const T b_len = std::sqrt(vec.x_ * vec.x_ + vec.y_ * vec.y_ + vec.z_ * vec.z_);
+      const T scale = std::max(1.0, std::max(a_len, b_len));
       return approx_zero(diff, scale);
     }
 
-    inline Point toPoint() const noexcept { return Point(x_, y_, z_); }
+    Point<T> toPoint() const noexcept { return Point(x_, y_, z_); }
+
     /// Operators
-    Vector &operator+=(const Vector &vec);
-    Vector &operator-=(const Vector &vec);
-    Vector &operator*=(const Vector &vec);
-    Vector &operator/=(const Vector &vec);
+
+    Vector<T> &operator+=(const Vector<T> &vec) {
+      x_ += vec.x_;
+      y_ += vec.y_;
+      z_ += vec.z_;
+      return *this;
+    }
+    Vector<T> &operator-=(const Vector<T> &vec) {
+      x_ -= vec.x_;
+      y_ -= vec.y_;
+      z_ -= vec.z_;
+      return *this;
+    }
+    Vector<T> &operator*=(const Vector<T> &vec) {
+      x_ *= vec.x_;
+      y_ *= vec.y_;
+      z_ *= vec.z_;
+      return *this;
+    }
+    Vector<T> &operator/=(const Vector<T> &vec) {
+      x_ /= vec.x_;
+      y_ /= vec.y_;
+      z_ /= vec.z_;
+      return *this;
+    }
 };
 
 /// Different operators
-Vector operator+(const Vector &a, const Vector &b);
+template <typename T> Vector<T> operator+(const Vector<T> &a, const Vector<T> &b) {
+  return Vector(a.x_ + b.x_, a.y_ + b.y_, a.z_ + b.z_);
+}
 
-Vector operator-(const Vector &a, const Vector &b);
-Vector operator-(const Point &a, const Point &b);
+template <typename T> Vector<T> operator-(const Vector<T> &a, const Vector<T> &b) {
+  return Vector(a.x_ - b.x_, a.y_ - b.y_, a.z_ - b.z_);
+}
+template <typename T> Vector<T> operator-(const Point<T> &a, const Point<T> &b) {
+  return Vector(a.x_ - b.x_, a.y_ - b.y_, a.z_ - b.z_);
+}
+template <typename T> T operator*(const Vector<T> &a, const Vector<T> &b) { return a.x_ * b.x_ + a.y_ * b.y_ + a.z_ * b.z_; }
+template <typename T> Vector<T> operator*(const Vector<T> &a, T scalar) {
+  return Vector(a.x_ * scalar, a.y_ * scalar, a.z_ * scalar);
+}
+template <typename T> Vector<T> operator*(T scalar, const Vector<T> &a) { return a * scalar; }
+template <typename T> T operator*(const Vector<T> &v, const Point<T> &p) { return v.x_ * p.x_ + v.y_ * p.y_ + v.z_ * p.z_; }
+template <typename T> T operator*(const Point<T> &p, const Vector<T> &v) { return v * p; }
 
-double operator*(const Vector &a, const Vector &b);
-Vector operator*(const Vector &a, double scalar);
-Vector operator*(double scalar, const Vector &a);
+template <typename T> Vector<T> operator/(const Vector<T> &a, T scalar) { return a * (1 / scalar); }
 
-double operator*(const Vector &v, const Point &p);
-double operator*(const Point &p, const Vector &v);
+/// Bool
 
-Vector operator/(const Vector &a, double scalar);
+template <typename T> bool operator==(const Vector<T> &a, const Vector<T> &b) {
+  const T dx = a.x_ - b.x_;
+  const T dy = a.y_ - b.y_;
+  const T dz = a.z_ - b.z_;
+  const T diff = std::sqrt(dx * dx + dy * dy + dz * dz);
 
-bool operator==(const Vector &a, const Vector &b);
-bool operator!=(const Vector &a, const Vector &b);
+  const T la = std::sqrt(a.x_ * a.x_ + a.y_ * a.y_ + a.z_ * a.z_);
+  const T lb = std::sqrt(b.x_ * b.x_ + b.y_ * b.y_ + b.z_ * b.z_);
+  const T scale = std::max(1.0, std::max(la, lb));
+
+  return approx_zero(diff, scale);
+}
+template <typename T> bool operator!=(const Vector<T> &a, const Vector<T> &b) { return !(a == b); }
 
 /// Support methods
 
-inline double norm(const Vector &v) noexcept { return std::sqrt(v * v); }
-inline double norm2(const Vector &v) noexcept { return v * v; }
+template <typename T> inline T norm(const Vector<T> &v) noexcept { return std::sqrt(v * v); }
+template <typename T> inline T norm2(const Vector<T> &v) noexcept { return v * v; }
 
-inline Vector normalize(const Vector &v) noexcept {
-  double n = norm(v);
+template <typename T> inline Vector<T> normalize(const Vector<T> &v) noexcept {
+  T n = norm(v);
   if (approx_zero(n))
-    return Vector::badVector();
+    return Vector<T>::badVector();
   return v / norm(v);
 }
 
-inline Vector cross_product(const Vector &a, const Vector &b) noexcept {
-  return Vector(a.getY() * b.getZ() - a.getZ() * b.getY(), a.getZ() * b.getX() - a.getX() * b.getZ(),
-                a.getX() * b.getY() - a.getY() * b.getX());
+template <typename T> inline Vector<T> cross_product(const Vector<T> &a, const Vector<T> &b) noexcept {
+  return Vector(a.y_ * b.z_ - a.z_ * b.y_, a.z_ * b.x_ - a.x_ * b.z_, a.x_ * b.y_ - a.y_ * b.x_);
 }
 
 /// \vec{ab}, a - beginning, b - ending
-inline Vector vec_from_points(const Point &a, const Point &b) noexcept {
-  double x = b.getX() - a.getX();
-  double y = b.getY() - a.getY();
-  double z = b.getZ() - a.getZ();
-  return Vector(x, y, z);
+template <typename T> inline Vector<T> vec_from_points(const Point<T> &a, const Point<T> &b) noexcept {
+  T x = b.x_ - a.x_;
+  T y = b.y_ - a.y_;
+  T z = b.z_ - a.z_;
+  return Vector<T>(x, y, z);
 }
 
 #endif

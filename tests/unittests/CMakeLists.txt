@@ -4,17 +4,6 @@ include(GoogleTest)
 
 add_executable(unittests 
   unittests.cpp
-  # Geometry
-  # Primitives
-  ${PROJECT_SOURCE_DIR}/source/octtree/bounding_box.cpp
-  ${PROJECT_SOURCE_DIR}/source/octtree/bounding_sphere.cpp
-
-  ${PROJECT_SOURCE_DIR}/source/primitives/triangle.cpp
-  ${PROJECT_SOURCE_DIR}/source/primitives/vector.cpp
-  ${PROJECT_SOURCE_DIR}/source/primitives/plane.cpp
-  ${PROJECT_SOURCE_DIR}/source/primitives/point.cpp
-  ${PROJECT_SOURCE_DIR}/source/primitives/line.cpp
-  ${PROJECT_SOURCE_DIR}/source/primitives/segment.cpp
 )
 
 target_include_directories(unittests PUBLIC "${PROJECT_SOURCE_DIR}/include")

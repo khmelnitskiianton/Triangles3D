@@ -1,19 +1,37 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
+#include <limits>
 #include <optional>
+#include <utility>
+#include <variant>
 
 #include "primitives/line.hpp"
 #include "primitives/plane.hpp"
 #include "primitives/point.hpp"
 #include "primitives/segment.hpp"
-#include "primitives/vector.hpp"
 #include "primitives/triangle.hpp"
+#include "primitives/vector.hpp"
+
+// Use one scalar type everywhere in tests
+using T = double;
+
+using P  = Point<T>;
+using V  = Vector<T>;
+using L  = Line<T>;
+using Pl = Plane<T>;
+using S  = Segment<T>;
+using Tr = Triangle<T>;
+
+static constexpr T NaN() { return std::numeric_limits<T>::quiet_NaN(); }
 
 //=================================================================================================
 // LINE TESTS
 
 TEST(LineTests, equalTest) {
-  bool res1 = equal(Line(Point(0, -1, 0), Point(-2, 0, 0)), Line(Point(-6, 2, 0), Point(-4, 1, 0)));
+  bool res1 = equal(
+      L(P(0, -1, 0), P(-2, 0, 0)),
+      L(P(-6, 2, 0), P(-4, 1, 0)));
   ASSERT_EQ(res1, true);
 }
 
@@ -21,47 +39,45 @@ TEST(LineTests, intersection_2linesTest) {
   // 1
   {
     SCOPED_TRACE("case 1");
-    Line l1 = Line(Point(-2, 0, 0), Point(0, 1, 0));
-    Line l2 = Line(Point(1, 0, 0), Point(0, -2, 0));
-    std::pair<LineToLineOrientation, Point> result = intersection_2lines(l1, l2);
+    L l1 = L(P(-2, 0, 0), P(0, 1, 0));
+    L l2 = L(P(1, 0, 0), P(0, -2, 0));
+    std::pair<LineToLineOrientation, P> result = intersection_2lines<T>(l1, l2);
     ASSERT_EQ(result.first, LineToLineOrientation::Intersect);
-    ASSERT_TRUE(equal(result.second, Point(2, 2, 0)));
+    ASSERT_TRUE(equal(result.second, P(2, 2, 0)));
   }
   // 2
   {
     SCOPED_TRACE("case 2");
-    Line l1 = Line(Point(-2, 0, 0), Point(0, 1, 0));
-    Line l2 = Line(Point(4, 0, 0), Point(0, -2, 0));
-    std::pair<LineToLineOrientation, Point> result = intersection_2lines(l1, l2);
+    L l1 = L(P(-2, 0, 0), P(0, 1, 0));
+    L l2 = L(P(4, 0, 0), P(0, -2, 0));
+    std::pair<LineToLineOrientation, P> result = intersection_2lines<T>(l1, l2);
     ASSERT_EQ(result.first, LineToLineOrientation::Parallel);
     ASSERT_TRUE(result.second.isBad());
   }
   // 3
   {
     SCOPED_TRACE("case 3");
-    Line l1 = Line(Point(-2, 0, 0), Point(0, 1, 0));
-    Line l2 = Line(Point(4, 3, 0), Point(2, 2, 0));
-    std::pair<LineToLineOrientation, Point> result = intersection_2lines(l1, l2);
+    L l1 = L(P(-2, 0, 0), P(0, 1, 0));
+    L l2 = L(P(4, 3, 0), P(2, 2, 0));
+    std::pair<LineToLineOrientation, P> result = intersection_2lines<T>(l1, l2);
     ASSERT_EQ(result.first, LineToLineOrientation::Coincident);
     ASSERT_TRUE(result.second.isBad());
   }
-
   // 4
   {
     SCOPED_TRACE("case 4");
-    Line l1 = Line(Point(-2, 0, 0), Point(0, 1, 0));
-    Line l2 = Line(Point(1, 0, 1), Point(0, -2, 1));
-    std::pair<LineToLineOrientation, Point> result = intersection_2lines(l1, l2);
+    L l1 = L(P(-2, 0, 0), P(0, 1, 0));
+    L l2 = L(P(1, 0, 1), P(0, -2, 1));
+    std::pair<LineToLineOrientation, P> result = intersection_2lines<T>(l1, l2);
     ASSERT_EQ(result.first, LineToLineOrientation::Skew);
     ASSERT_TRUE(result.second.isBad());
   }
-
   // 5
   {
     SCOPED_TRACE("case 5");
-    Line l1 = Line(Point(-2, 0, 0), Point(0, 1, 0));
-    Line l2 = Line::badLine();
-    std::pair<LineToLineOrientation, Point> result = intersection_2lines(l1, l2);
+    L l1 = L(P(-2, 0, 0), P(0, 1, 0));
+    L l2 = L::badLine();
+    std::pair<LineToLineOrientation, P> result = intersection_2lines<T>(l1, l2);
     ASSERT_EQ(result.first, LineToLineOrientation::Invalid);
     ASSERT_TRUE(result.second.isBad());
   }
@@ -71,51 +87,50 @@ TEST(LineTests, intersection_2linesTest) {
 // PLANE TESTS
 
 TEST(PlaneTests, pointPositionTest) {
-  Plane p1 = Plane(Point(-2, 0, 0), Point(0, 0, 1), Point(0, -1, 0));
-  ASSERT_EQ(p1.pointPosition(Point(1, 0, 0)), PlaneSide::PositiveHalfSpace);
-  ASSERT_EQ(p1.pointPosition(Point(1, 0, 1.5)), PlaneSide::BelongsToPlane);
-  ASSERT_EQ(p1.pointPosition(Point(-4, 1, 0)), PlaneSide::BelongsToPlane);
-  ASSERT_EQ(p1.pointPosition(Point(-3, 0, 0)), PlaneSide::NegativeHalfSpace);
+  Pl p1 = Pl(P(-2, 0, 0), P(0, 0, 1), P(0, -1, 0));
+  ASSERT_EQ(p1.pointPosition(P(1, 0, 0)), PlaneSide::PositiveHalfSpace);
+  ASSERT_EQ(p1.pointPosition(P(1, 0, 1.5)), PlaneSide::BelongsToPlane);
+  ASSERT_EQ(p1.pointPosition(P(-4, 1, 0)), PlaneSide::BelongsToPlane);
+  ASSERT_EQ(p1.pointPosition(P(-3, 0, 0)), PlaneSide::NegativeHalfSpace);
 }
 
 TEST(PlaneTests, intersection_2planesTest) {
   // 1
   {
     SCOPED_TRACE("case 1");
-    Plane p1 = Plane(Point(-2, 0, 0), Point(0, 0, 1), Point(0, -1, 0));
-    Plane p2 = Plane(Point(0, 0, 0), Point(0, 1, 0), Point(-1, 0, 0));
-    std::pair<PlaneToPlaneOrientation, Line> result = intersection_2planes(p1, p2);
-    Line prob_inter = Line(Point(-6, 2, 0), Point(-4, 1, 0));
+    Pl p1 = Pl(P(-2, 0, 0), P(0, 0, 1), P(0, -1, 0));
+    Pl p2 = Pl(P(0, 0, 0), P(0, 1, 0), P(-1, 0, 0));
+    std::pair<PlaneToPlaneOrientation, L> result = intersection_2planes<T>(p1, p2);
+    L prob_inter = L(P(-6, 2, 0), P(-4, 1, 0));
     ASSERT_EQ(result.first, PlaneToPlaneOrientation::Intersect);
     ASSERT_TRUE(equal(result.second, prob_inter));
   }
   // 2
   {
     SCOPED_TRACE("case 2");
-    Plane p1 = Plane(Point(0, 0, 0), Point(0, 1, 0), Point(-1, 0, 0));
-    Plane p2 = Plane(Point(2, 0, 1), Point(-2, 1, 1), Point(-1, 0, 1));
-    std::pair<PlaneToPlaneOrientation, Line> result = intersection_2planes(p1, p2);
+    Pl p1 = Pl(P(0, 0, 0), P(0, 1, 0), P(-1, 0, 0));
+    Pl p2 = Pl(P(2, 0, 1), P(-2, 1, 1), P(-1, 0, 1));
+    std::pair<PlaneToPlaneOrientation, L> result = intersection_2planes<T>(p1, p2);
     ASSERT_EQ(result.first, PlaneToPlaneOrientation::Parallel);
     ASSERT_TRUE(result.second.isBad());
   }
-
   // 3
   {
     SCOPED_TRACE("case 3");
-    Plane p1 = Plane(Point(0, 0, 0), Point(0, 1, 0), Point(-1, 0, 0));
-    Plane p2 = Plane(Point(2, 0, 0), Point(-2, 1, 0), Point(-1, 0, 0));
-    std::pair<PlaneToPlaneOrientation, Line> result = intersection_2planes(p1, p2);
+    Pl p1 = Pl(P(0, 0, 0), P(0, 1, 0), P(-1, 0, 0));
+    Pl p2 = Pl(P(2, 0, 0), P(-2, 1, 0), P(-1, 0, 0));
+    std::pair<PlaneToPlaneOrientation, L> result = intersection_2planes<T>(p1, p2);
     ASSERT_EQ(result.first, PlaneToPlaneOrientation::Coincident);
     ASSERT_TRUE(result.second.isBad());
   }
 }
 
 TEST(PlaneTests, BadZeroTest) {
-  Plane bad_plane1 = Plane(Point(NAN, NAN, NAN), Point(NAN, NAN, NAN), Point(NAN, NAN, NAN));
-  Plane bad_plane2 = Plane(Point(NAN, NAN, NAN), Vector(4, 3, 2));
-  Plane bad_plane3 = Plane(Point(4, 3, 2), Vector(4, 3, NAN));
+  Pl bad_plane1 = Pl(P(NaN(), NaN(), NaN()), P(NaN(), NaN(), NaN()), P(NaN(), NaN(), NaN()));
+  Pl bad_plane2 = Pl(P(NaN(), NaN(), NaN()), V(4, 3, 2));
+  Pl bad_plane3 = Pl(P(4, 3, 2), V(4, 3, NaN()));
 
-  Plane degenerate_plane1 = Plane(Point(3, 2, 4), Vector(0, 0, 0));
+  Pl degenerate_plane1 = Pl(P(3, 2, 4), V(0, 0, 0));
 
   ASSERT_TRUE(bad_plane1.isBad());
   ASSERT_TRUE(bad_plane2.isBad());
@@ -125,32 +140,29 @@ TEST(PlaneTests, BadZeroTest) {
 
 //=================================================================================================
 // Segment Tests
+
 TEST(SegmentTests, equalTest) {
   // 1
   {
     SCOPED_TRACE("case 1");
-    // On one line
-    Segment s1 = Segment(Point(-2, 0, 0), Point(2, 2, 0));
-    Segment s2 = Segment(Point(2, 2, 0), Point(-2, 0, 0));
+    S s1 = S(P(-2, 0, 0), P(2, 2, 0));
+    S s2 = S(P(2, 2, 0), P(-2, 0, 0));
     bool result = equal(s1, s2);
     ASSERT_EQ(result, true);
   }
   // 2
   {
     SCOPED_TRACE("case 2");
-    // On one line
-    Segment s1 = Segment(Point(-2, 0, 0), Point(2, 2, 0));
-    Segment s2 = Segment(Point(-2, 0, 0), Point(2, 2, 0));
+    S s1 = S(P(-2, 0, 0), P(2, 2, 0));
+    S s2 = S(P(-2, 0, 0), P(2, 2, 0));
     bool result = equal(s1, s2);
     ASSERT_EQ(result, true);
   }
-
   // 3
   {
     SCOPED_TRACE("case 3");
-    // On one line
-    Segment s1 = Segment(Point(-2, 0, 0), Point(2, 2, 0));
-    Segment s2 = Segment(Point(-2, 0, 1), Point(2, 2, 1));
+    S s1 = S(P(-2, 0, 0), P(2, 2, 0));
+    S s2 = S(P(-2, 0, 1), P(2, 2, 1));
     bool result = equal(s1, s2);
     ASSERT_EQ(result, false);
   }
@@ -160,40 +172,33 @@ TEST(SegmentTests, intersection_2segments_on_lineTest) {
   // 1
   {
     SCOPED_TRACE("case 1");
-    // On one line
-    Segment s1 = Segment(Point(-2, 0, 0), Point(2, 2, 0));
-    Segment s2 = Segment(Point(0, 1, 0), Point(-4, -1, 0));
-    bool result = intersection_2segments_on_line(s1, s2);
+    S s1 = S(P(-2, 0, 0), P(2, 2, 0));
+    S s2 = S(P(0, 1, 0), P(-4, -1, 0));
+    bool result = intersection_2segments_on_line<T>(s1, s2);
     ASSERT_EQ(result, true);
   }
-
   // 2
   {
     SCOPED_TRACE("case 2");
-    // On one line
-    Segment s1 = Segment(Point(-2, 0, 0), Point(2, 2, 0));
-    Segment s2 = Segment(Point(2, 2, 0), Point(-4, -1, 0));
-    bool result = intersection_2segments_on_line(s1, s2);
+    S s1 = S(P(-2, 0, 0), P(2, 2, 0));
+    S s2 = S(P(2, 2, 0), P(-4, -1, 0));
+    bool result = intersection_2segments_on_line<T>(s1, s2);
     ASSERT_EQ(result, true);
   }
-
   // 3
   {
     SCOPED_TRACE("case 3");
-    // On one line
-    Segment s1 = Segment(Point(-2, 0, 0), Point(-4, -1, 0));
-    Segment s2 = Segment(Point(2, 2, 0), Point(-2, 0, 0));
-    bool result = intersection_2segments_on_line(s1, s2);
+    S s1 = S(P(-2, 0, 0), P(-4, -1, 0));
+    S s2 = S(P(2, 2, 0), P(-2, 0, 0));
+    bool result = intersection_2segments_on_line<T>(s1, s2);
     ASSERT_EQ(result, true);
   }
-
   // 4
   {
     SCOPED_TRACE("case 4");
-    // On one line
-    Segment s1 = Segment(Point(-2, 0, 0), Point(-4, -1, 0));
-    Segment s2 = Segment(Point(2, 2, 0), Point(0, 1, 0));
-    bool result = intersection_2segments_on_line(s1, s2);
+    S s1 = S(P(-2, 0, 0), P(-4, -1, 0));
+    S s2 = S(P(2, 2, 0), P(0, 1, 0));
+    bool result = intersection_2segments_on_line<T>(s1, s2);
     ASSERT_EQ(result, false);
   }
 }
@@ -202,54 +207,49 @@ TEST(SegmentTests, intersection_2segmentsTest) {
   // 1
   {
     SCOPED_TRACE("case 1");
-    Segment s1 = Segment(Point(-2, 0, 0), Point(0, 1, 0));
-    Segment s2 = Segment(Point(-1, 0, 0), Point(0, -1, 0));
-    bool result = intersection_2segments(s1, s2);
+    S s1 = S(P(-2, 0, 0), P(0, 1, 0));
+    S s2 = S(P(-1, 0, 0), P(0, -1, 0));
+    bool result = intersection_2segments<T>(s1, s2);
     ASSERT_EQ(result, false);
   }
-
   // 2
   {
     SCOPED_TRACE("case 2");
-    Segment s1 = Segment(Point(-1, -2, 0), Point(0, 1, 0));
-    Segment s2 = Segment(Point(-1, 0, 0), Point(0, -1, 0));
-    bool result = intersection_2segments(s1, s2);
+    S s1 = S(P(-1, -2, 0), P(0, 1, 0));
+    S s2 = S(P(-1, 0, 0), P(0, -1, 0));
+    bool result = intersection_2segments<T>(s1, s2);
     ASSERT_EQ(result, true);
   }
-
   // 3
   {
     SCOPED_TRACE("case 3");
-    Segment s1 = Segment(Point(-0.5, -0.5, 0), Point(0, 0, 1));
-    Segment s2 = Segment(Point(-1, 0, 0), Point(0, -1, 0));
-    bool result = intersection_2segments(s1, s2);
+    S s1 = S(P(-0.5, -0.5, 0), P(0, 0, 1));
+    S s2 = S(P(-1, 0, 0), P(0, -1, 0));
+    bool result = intersection_2segments<T>(s1, s2);
     ASSERT_EQ(result, true);
   }
-
   // 4
   {
     SCOPED_TRACE("case 4");
-    Segment s1 = Segment(Point(-2, 0, 0), Point(-2, 0, 0));
-    Segment s2 = Segment(Point(-1, 0, 0), Point(0, -1, 0));
-    bool result = intersection_2segments(s1, s2);
+    S s1 = S(P(-2, 0, 0), P(-2, 0, 0));
+    S s2 = S(P(-1, 0, 0), P(0, -1, 0));
+    bool result = intersection_2segments<T>(s1, s2);
     ASSERT_EQ(result, false);
   }
-
   // 5
   {
     SCOPED_TRACE("case 5");
-    Segment s1 = Segment(Point(-0.5, -0.5, 0), Point(-0.5, -0.5, 0));
-    Segment s2 = Segment(Point(-1, 0, 0), Point(0, -1, 0));
-    bool result = intersection_2segments(s1, s2);
+    S s1 = S(P(-0.5, -0.5, 0), P(-0.5, -0.5, 0));
+    S s2 = S(P(-1, 0, 0), P(0, -1, 0));
+    bool result = intersection_2segments<T>(s1, s2);
     ASSERT_EQ(result, true);
   }
-
   // 6
   {
     SCOPED_TRACE("case 6");
-    Segment s1 = Segment(Point(-2, 1, 0), Point(-2, 1, 0));
-    Segment s2 = Segment(Point(-1, 0, 0), Point(0, -1, 0));
-    bool result = intersection_2segments(s1, s2);
+    S s1 = S(P(-2, 1, 0), P(-2, 1, 0));
+    S s2 = S(P(-1, 0, 0), P(0, -1, 0));
+    bool result = intersection_2segments<T>(s1, s2);
     ASSERT_EQ(result, false);
   }
 }
@@ -258,136 +258,126 @@ TEST(SegmentTests, intersection_2segmentsTest) {
 // Triangle Tests
 
 TEST(TriangleTests, isIncludeTest) {
-  Triangle t = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
+  Tr t = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
   // 1
   {
     SCOPED_TRACE("case 1");
-    Point p = Point(0, 0, 0);
+    P p = P(0, 0, 0);
     bool result = t.isInclude(p);
     ASSERT_EQ(result, true);
   }
-
   // 2
   {
     SCOPED_TRACE("case 2");
-    Point p = Point(1, 0, 0);
+    P p = P(1, 0, 0);
     bool result = t.isInclude(p);
     ASSERT_EQ(result, false);
   }
-
   // 3
   {
     SCOPED_TRACE("case 3");
-    Point p = Point(-0.5, 0, 0);
+    P p = P(-0.5, 0, 0);
     bool result = t.isInclude(p);
     ASSERT_EQ(result, true);
   }
-
   // 4
   {
     SCOPED_TRACE("case 4");
-    Point p = Point(-0.1, 0.1, 0);
+    P p = P(-0.1, 0.1, 0);
     bool result = t.isInclude(p);
     ASSERT_EQ(result, true);
   }
 }
 
 TEST(TriangleTests, collapseTest) {
+  // NOTE: this assumes Triangle<T>::collapsed_ is std::variant<std::monostate, Point<T>, Segment<T>>
+  using CollapsedT = decltype(std::declval<Tr>().collapsed_);
+
   // 1
   {
     SCOPED_TRACE("case 1");
-    Triangle t = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Collapsed res = t.getCollapsed();
-    ASSERT_EQ(std::holds_alternative<std::monostate>(res), true);
+    Tr t = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    CollapsedT res = t.collapsed_;
+    ASSERT_TRUE(std::holds_alternative<std::monostate>(res));
   }
-
   // 2
   {
     SCOPED_TRACE("case 2");
-    Triangle t = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 1));
-    Collapsed res = t.getCollapsed();
-    ASSERT_EQ(std::holds_alternative<std::monostate>(res), true);
+    Tr t = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 1));
+    CollapsedT res = t.collapsed_;
+    ASSERT_TRUE(std::holds_alternative<std::monostate>(res));
   }
-
   // 3
   {
     SCOPED_TRACE("case 3");
-    Triangle t = Triangle(Point(0, 0, 0), Point(0, 0, 0), Point(0, 0, 0));
-    Collapsed res = t.getCollapsed();
-    ASSERT_EQ(std::holds_alternative<Point>(res), true);
-    ASSERT_EQ(equal(std::get<Point>(res), Point(0, 0, 0)), true);
+    Tr t = Tr(P(0, 0, 0), P(0, 0, 0), P(0, 0, 0));
+    CollapsedT res = t.collapsed_;
+    ASSERT_TRUE(std::holds_alternative<P>(res));
+    ASSERT_TRUE(equal(std::get<P>(res), P(0, 0, 0)));
   }
-
   // 4
   {
     SCOPED_TRACE("case 4");
-    Triangle t = Triangle(Point(1, 0, -1), Point(1, 0, -1), Point(1, 0, -1));
-    Collapsed res = t.getCollapsed();
-    ASSERT_EQ(std::holds_alternative<Point>(res), true);
-    ASSERT_EQ(equal(std::get<Point>(res), Point(1, 0, -1)), true);
+    Tr t = Tr(P(1, 0, -1), P(1, 0, -1), P(1, 0, -1));
+    CollapsedT res = t.collapsed_;
+    ASSERT_TRUE(std::holds_alternative<P>(res));
+    ASSERT_TRUE(equal(std::get<P>(res), P(1, 0, -1)));
   }
-
   // 5
   {
     SCOPED_TRACE("case 5");
-    Triangle t = Triangle(Point(1, 0, 0), Point(-1, 0, 0), Point(0, 0, 0));
-    Collapsed res = t.getCollapsed();
-    ASSERT_EQ(std::holds_alternative<Segment>(res), true);
-    ASSERT_EQ(equal(std::get<Segment>(res), Segment(Point(1, 0, 0), Point(-1, 0, 0))), true);
+    Tr t = Tr(P(1, 0, 0), P(-1, 0, 0), P(0, 0, 0));
+    CollapsedT res = t.collapsed_;
+    ASSERT_TRUE(std::holds_alternative<S>(res));
+    ASSERT_TRUE(equal(std::get<S>(res), S(P(1, 0, 0), P(-1, 0, 0))));
   }
-
-  // 6
+  // 6 (duplicate in your original, kept)
   {
     SCOPED_TRACE("case 6");
-    Triangle t = Triangle(Point(1, 0, 0), Point(-1, 0, 0), Point(0, 0, 0));
-    Collapsed res = t.getCollapsed();
-    ASSERT_EQ(std::holds_alternative<Segment>(res), true);
-    ASSERT_EQ(equal(std::get<Segment>(res), Segment(Point(1, 0, 0), Point(-1, 0, 0))), true);
+    Tr t = Tr(P(1, 0, 0), P(-1, 0, 0), P(0, 0, 0));
+    CollapsedT res = t.collapsed_;
+    ASSERT_TRUE(std::holds_alternative<S>(res));
+    ASSERT_TRUE(equal(std::get<S>(res), S(P(1, 0, 0), P(-1, 0, 0))));
   }
-
   // 7
   {
     SCOPED_TRACE("case 7");
-    Triangle t = Triangle(Point(-1, 1, 0), Point(0, 0, 0), Point(-2, 2, 0));
-    Collapsed res = t.getCollapsed();
-    ASSERT_EQ(std::holds_alternative<Segment>(res), true);
-    ASSERT_EQ(equal(std::get<Segment>(res), Segment(Point(0, 0, 0), Point(-2, 2, 0))), true);
+    Tr t = Tr(P(-1, 1, 0), P(0, 0, 0), P(-2, 2, 0));
+    CollapsedT res = t.collapsed_;
+    ASSERT_TRUE(std::holds_alternative<S>(res));
+    ASSERT_TRUE(equal(std::get<S>(res), S(P(0, 0, 0), P(-2, 2, 0))));
   }
-
   // 8
   {
     SCOPED_TRACE("case 8");
-    Triangle t = Triangle(Point(-1, 1, 0), Point(0, 0, 0), Point(-2, 2, 0));
-    Collapsed res = t.getCollapsed();
-    ASSERT_EQ(std::holds_alternative<Segment>(res), true);
-    ASSERT_EQ(equal(std::get<Segment>(res), Segment(Point(-2, 2, 0), Point(0, 0, 0))), true);
+    Tr t = Tr(P(-1, 1, 0), P(0, 0, 0), P(-2, 2, 0));
+    CollapsedT res = t.collapsed_;
+    ASSERT_TRUE(std::holds_alternative<S>(res));
+    ASSERT_TRUE(equal(std::get<S>(res), S(P(-2, 2, 0), P(0, 0, 0))));
   }
-
   // 9
   {
     SCOPED_TRACE("case 9");
-    Triangle t = Triangle(Point(-1, 1, 0), Point(0, 0, 1), Point(1, -1, 2));
-    Collapsed res = t.getCollapsed();
-    ASSERT_EQ(std::holds_alternative<Segment>(res), true);
-    ASSERT_EQ(equal(std::get<Segment>(res), Segment(Point(1, -1, 2), Point(-1, 1, 0))), true);
+    Tr t = Tr(P(-1, 1, 0), P(0, 0, 1), P(1, -1, 2));
+    CollapsedT res = t.collapsed_;
+    ASSERT_TRUE(std::holds_alternative<S>(res));
+    ASSERT_TRUE(equal(std::get<S>(res), S(P(1, -1, 2), P(-1, 1, 0))));
   }
-
   // 10
   {
     SCOPED_TRACE("case 10");
-    Triangle t = Triangle(Point(-1, 1, 0), Point(-1, 1, 0), Point(1, -1, 2));
-    Collapsed res = t.getCollapsed();
-    ASSERT_EQ(std::holds_alternative<Segment>(res), true);
-    ASSERT_EQ(equal(std::get<Segment>(res), Segment(Point(1, -1, 2), Point(-1, 1, 0))), true);
+    Tr t = Tr(P(-1, 1, 0), P(-1, 1, 0), P(1, -1, 2));
+    CollapsedT res = t.collapsed_;
+    ASSERT_TRUE(std::holds_alternative<S>(res));
+    ASSERT_TRUE(equal(std::get<S>(res), S(P(1, -1, 2), P(-1, 1, 0))));
   }
-
   // 11
   {
     SCOPED_TRACE("case 11");
-    Triangle t = Triangle(Point(1, -1, 2), Point(-1, 1, 0), Point(1, -1, 2));
-    Collapsed res = t.getCollapsed();
-    ASSERT_EQ(std::holds_alternative<Segment>(res), true);
-    ASSERT_EQ(equal(std::get<Segment>(res), Segment(Point(1, -1, 2), Point(-1, 1, 0))), true);
+    Tr t = Tr(P(1, -1, 2), P(-1, 1, 0), P(1, -1, 2));
+    CollapsedT res = t.collapsed_;
+    ASSERT_TRUE(std::holds_alternative<S>(res));
+    ASSERT_TRUE(equal(std::get<S>(res), S(P(1, -1, 2), P(-1, 1, 0))));
   }
 }
 
@@ -395,41 +385,37 @@ TEST(TriangleTests, intersection_line_triangleTest) {
   // 1
   {
     SCOPED_TRACE("case 1");
-
-    Triangle t = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Line l = Line(Point(1, 0, 0), Point(0, -1, 0));
-    std::optional<Segment> result = intersection_triangle_line_on_plane(t, l);
+    Tr t = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    L  l = L(P(1, 0, 0), P(0, -1, 0));
+    std::optional<S> result = intersection_triangle_line_on_plane<T>(t, l);
     ASSERT_EQ(result, std::nullopt);
   }
-
   // 2
   {
     SCOPED_TRACE("case 2");
-    Triangle t = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Line l = Line(Point(0, 1, 0), Point(0, 0, 0));
-    std::optional<Segment> result = intersection_triangle_line_on_plane(t, l);
+    Tr t = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    L  l = L(P(0, 1, 0), P(0, 0, 0));
+    std::optional<S> result = intersection_triangle_line_on_plane<T>(t, l);
     ASSERT_NE(result, std::nullopt);
-    ASSERT_EQ(equal(*result, Segment(Point(0, 1, 0), Point(0, 0, 0))), true);
+    ASSERT_TRUE(equal(*result, S(P(0, 1, 0), P(0, 0, 0))));
   }
-
   // 3
   {
     SCOPED_TRACE("case 3");
-    Triangle t = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Line l = Line(Point(-1, 0, 0), Vector(0, 3, 0));
-    std::optional<Segment> result = intersection_triangle_line_on_plane(t, l);
+    Tr t = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    L  l = L(P(-1, 0, 0), V(0, 3, 0));
+    std::optional<S> result = intersection_triangle_line_on_plane<T>(t, l);
     ASSERT_NE(result, std::nullopt);
-    ASSERT_EQ(equal(*result, Segment(Point(-1, 0.5, 0), Point(-1, 0, 0))), true);
+    ASSERT_TRUE(equal(*result, S(P(-1, 0.5, 0), P(-1, 0, 0))));
   }
-
   // 4
   {
     SCOPED_TRACE("case 4");
-    Triangle t = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Line l = Line(Point(1, 1, 0), Vector(2, 2, 0));
-    std::optional<Segment> result = intersection_triangle_line_on_plane(t, l);
+    Tr t = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    L  l = L(P(1, 1, 0), V(2, 2, 0));
+    std::optional<S> result = intersection_triangle_line_on_plane<T>(t, l);
     ASSERT_NE(result, std::nullopt);
-    ASSERT_EQ(result->isDegenerate(), true);
+    ASSERT_TRUE(result->isDegenerate());
   }
 }
 
@@ -437,144 +423,144 @@ TEST(TriangleTests, intersection_2triangles_intersect_planesTest) {
   // 1
   {
     SCOPED_TRACE("case 1");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Triangle t2 = Triangle(Point(0, 0, 1), Point(0, 1, 0), Point(-2, 0, 0));
-    Plane p1 = t1.getPlane();
-    Plane p2 = t2.getPlane();
-    std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-    bool result = intersection_2triangles_intersect_planes(t1, t2, inter.second);
+    Tr t1 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    Tr t2 = Tr(P(0, 0, 1), P(0, 1, 0), P(-2, 0, 0));
+    Pl p1 = t1.plane_;
+    Pl p2 = t2.plane_;
+    std::pair<PlaneToPlaneOrientation, L> inter = intersection_2planes<T>(p1, p2);
+    bool result = intersection_2triangles_intersect_planes<T>(t1, t2, inter.second);
     ASSERT_EQ(result, true);
   }
 
   // 2
   {
     SCOPED_TRACE("case 2");
-    Triangle t1 = Triangle(Point(-3, 0, 0), Point(0, -1, 0), Point(0, 0, 1));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Plane p1 = t1.getPlane();
-    Plane p2 = t2.getPlane();
-    std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-    bool result = intersection_2triangles_intersect_planes(t1, t2, inter.second);
+    Tr t1 = Tr(P(-3, 0, 0), P(0, -1, 0), P(0, 0, 1));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    Pl p1 = t1.plane_;
+    Pl p2 = t2.plane_;
+    std::pair<PlaneToPlaneOrientation, L> inter = intersection_2planes<T>(p1, p2);
+    bool result = intersection_2triangles_intersect_planes<T>(t1, t2, inter.second);
     ASSERT_EQ(result, false);
   }
 
   // 3
   {
     SCOPED_TRACE("case 3");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-3, 0, 0), Point(0, 0, 2));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Plane p1 = t1.getPlane();
-    Plane p2 = t2.getPlane();
-    std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-    bool result = intersection_2triangles_intersect_planes(t1, t2, inter.second);
+    Tr t1 = Tr(P(0, 0, 0), P(-3, 0, 0), P(0, 0, 2));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    Pl p1 = t1.plane_;
+    Pl p2 = t2.plane_;
+    std::pair<PlaneToPlaneOrientation, L> inter = intersection_2planes<T>(p1, p2);
+    bool result = intersection_2triangles_intersect_planes<T>(t1, t2, inter.second);
     ASSERT_EQ(result, true);
   }
 
   // 4
   {
     SCOPED_TRACE("case 4");
-    Triangle t1 = Triangle(Point(1, 0, 0), Point(-3, 0, 0), Point(0, 0, 2));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Plane p1 = t1.getPlane();
-    Plane p2 = t2.getPlane();
-    std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-    bool result = intersection_2triangles_intersect_planes(t1, t2, inter.second);
+    Tr t1 = Tr(P(1, 0, 0), P(-3, 0, 0), P(0, 0, 2));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    Pl p1 = t1.plane_;
+    Pl p2 = t2.plane_;
+    std::pair<PlaneToPlaneOrientation, L> inter = intersection_2planes<T>(p1, p2);
+    bool result = intersection_2triangles_intersect_planes<T>(t1, t2, inter.second);
     ASSERT_EQ(result, true);
   }
 
   // 5
   {
     SCOPED_TRACE("case 5");
-    Triangle t1 = Triangle(Point(-2, 0, 0), Point(-3, 0, 0), Point(0, 0, 2));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Plane p1 = t1.getPlane();
-    Plane p2 = t2.getPlane();
-    std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-    bool result = intersection_2triangles_intersect_planes(t1, t2, inter.second);
+    Tr t1 = Tr(P(-2, 0, 0), P(-3, 0, 0), P(0, 0, 2));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    Pl p1 = t1.plane_;
+    Pl p2 = t2.plane_;
+    std::pair<PlaneToPlaneOrientation, L> inter = intersection_2planes<T>(p1, p2);
+    bool result = intersection_2triangles_intersect_planes<T>(t1, t2, inter.second);
     ASSERT_EQ(result, true);
   }
 
   // 6
   {
     SCOPED_TRACE("case 6");
-    Triangle t1 = Triangle(Point(-3, 0, 0), Point(-4, 0, 0), Point(0, 0, 2));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Plane p1 = t1.getPlane();
-    Plane p2 = t2.getPlane();
-    std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-    bool result = intersection_2triangles_intersect_planes(t1, t2, inter.second);
+    Tr t1 = Tr(P(-3, 0, 0), P(-4, 0, 0), P(0, 0, 2));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    Pl p1 = t1.plane_;
+    Pl p2 = t2.plane_;
+    std::pair<PlaneToPlaneOrientation, L> inter = intersection_2planes<T>(p1, p2);
+    bool result = intersection_2triangles_intersect_planes<T>(t1, t2, inter.second);
     ASSERT_EQ(result, false);
   }
 
   // 7
   {
     SCOPED_TRACE("case 7");
-    Triangle t1 = Triangle(Point(-4, 0, 0), Point(0, 2, 0), Point(0, 0, 2));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Plane p1 = t1.getPlane();
-    Plane p2 = t2.getPlane();
-    std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-    bool result = intersection_2triangles_intersect_planes(t1, t2, inter.second);
+    Tr t1 = Tr(P(-4, 0, 0), P(0, 2, 0), P(0, 0, 2));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    Pl p1 = t1.plane_;
+    Pl p2 = t2.plane_;
+    std::pair<PlaneToPlaneOrientation, L> inter = intersection_2planes<T>(p1, p2);
+    bool result = intersection_2triangles_intersect_planes<T>(t1, t2, inter.second);
     ASSERT_EQ(result, false);
   }
 
   // 8
   {
     SCOPED_TRACE("case 8");
-    Triangle t1 = Triangle(Point(2, 1, 0), Point(-2, -1, 0), Point(0, 0, 2));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Plane p1 = t1.getPlane();
-    Plane p2 = t2.getPlane();
-    std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-    bool result = intersection_2triangles_intersect_planes(t1, t2, inter.second);
+    Tr t1 = Tr(P(2, 1, 0), P(-2, -1, 0), P(0, 0, 2));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    Pl p1 = t1.plane_;
+    Pl p2 = t2.plane_;
+    std::pair<PlaneToPlaneOrientation, L> inter = intersection_2planes<T>(p1, p2);
+    bool result = intersection_2triangles_intersect_planes<T>(t1, t2, inter.second);
     ASSERT_EQ(result, true);
   }
 
   // 9
   {
     SCOPED_TRACE("case 9");
-    Triangle t1 = Triangle(Point(1, 1, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 0, 2), Point(2, 0, 2));
-    Plane p1 = t1.getPlane();
-    Plane p2 = t2.getPlane();
-    std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-    bool result = intersection_2triangles_intersect_planes(t1, t2, inter.second);
+    Tr t1 = Tr(P(1, 1, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 0, 2), P(2, 0, 2));
+    Pl p1 = t1.plane_;
+    Pl p2 = t2.plane_;
+    std::pair<PlaneToPlaneOrientation, L> inter = intersection_2planes<T>(p1, p2);
+    bool result = intersection_2triangles_intersect_planes<T>(t1, t2, inter.second);
     ASSERT_EQ(result, true);
   }
 
   // 10
   {
     SCOPED_TRACE("case 10");
-    Triangle t1 = Triangle(Point(1, 1, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(-1, 0, 0), Point(0, 0, 2), Point(2, 0, 2));
-    Plane p1 = t1.getPlane();
-    Plane p2 = t2.getPlane();
-    std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-    bool result = intersection_2triangles_intersect_planes(t1, t2, inter.second);
+    Tr t1 = Tr(P(1, 1, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(-1, 0, 0), P(0, 0, 2), P(2, 0, 2));
+    Pl p1 = t1.plane_;
+    Pl p2 = t2.plane_;
+    std::pair<PlaneToPlaneOrientation, L> inter = intersection_2planes<T>(p1, p2);
+    bool result = intersection_2triangles_intersect_planes<T>(t1, t2, inter.second);
     ASSERT_EQ(result, false);
   }
 
   // 11
   {
     SCOPED_TRACE("case 11");
-    Triangle t1 = Triangle(Point(1, 1, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(0, 1, 0), Point(0, 0, 2), Point(2, 0, 2));
-    Plane p1 = t1.getPlane();
-    Plane p2 = t2.getPlane();
-    std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-    bool result = intersection_2triangles_intersect_planes(t1, t2, inter.second);
+    Tr t1 = Tr(P(1, 1, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(0, 1, 0), P(0, 0, 2), P(2, 0, 2));
+    Pl p1 = t1.plane_;
+    Pl p2 = t2.plane_;
+    std::pair<PlaneToPlaneOrientation, L> inter = intersection_2planes<T>(p1, p2);
+    bool result = intersection_2triangles_intersect_planes<T>(t1, t2, inter.second);
     ASSERT_EQ(result, true);
   }
 
   // 12
   {
     SCOPED_TRACE("case 12");
-    Triangle t1 = Triangle(Point(1, 1, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(2, 1, 0), Point(0, 0, 2), Point(2, 0, 2));
-    Plane p1 = t1.getPlane();
-    Plane p2 = t2.getPlane();
-    std::pair<PlaneToPlaneOrientation, Line> inter = intersection_2planes(p1, p2);
-    bool result = intersection_2triangles_intersect_planes(t1, t2, inter.second);
+    Tr t1 = Tr(P(1, 1, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(2, 1, 0), P(0, 0, 2), P(2, 0, 2));
+    Pl p1 = t1.plane_;
+    Pl p2 = t2.plane_;
+    std::pair<PlaneToPlaneOrientation, L> inter = intersection_2planes<T>(p1, p2);
+    bool result = intersection_2triangles_intersect_planes<T>(t1, t2, inter.second);
     ASSERT_EQ(result, false);
   }
 }
@@ -583,72 +569,72 @@ TEST(TriangleTests, intersection_2triangles_coincident_planesTest) {
   // 1
   {
     SCOPED_TRACE("case 1");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, -1, 0));
-    Triangle t2 = Triangle(Point(-2, 0, 0), Point(0, 1, 0), Point(0, 2, 0));
-    bool result = intersection_2triangles_coincident_planes(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, -1, 0));
+    Tr t2 = Tr(P(-2, 0, 0), P(0, 1, 0), P(0, 2, 0));
+    bool result = intersection_2triangles_coincident_planes<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
   // 2
   {
     SCOPED_TRACE("case 2");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, -1, 0));
-    Triangle t2 = Triangle(Point(-1, 0, 0), Point(0, 1, 0), Point(0, 2, 0));
-    bool result = intersection_2triangles_coincident_planes(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, -1, 0));
+    Tr t2 = Tr(P(-1, 0, 0), P(0, 1, 0), P(0, 2, 0));
+    bool result = intersection_2triangles_coincident_planes<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 3
   {
     SCOPED_TRACE("case 3");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, -1, 0));
-    Triangle t2 = Triangle(Point(-0.5, 0, 0), Point(0, 1, 0), Point(0, 2, 0));
-    bool result = intersection_2triangles_coincident_planes(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, -1, 0));
+    Tr t2 = Tr(P(-0.5, 0, 0), P(0, 1, 0), P(0, 2, 0));
+    bool result = intersection_2triangles_coincident_planes<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 4
   {
     SCOPED_TRACE("case 4");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, -1, 0));
-    Triangle t2 = Triangle(Point(-3, 0, 0), Point(0, -1.5, 0), Point(0, -0.5, 0));
-    bool result = intersection_2triangles_coincident_planes(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, -1, 0));
+    Tr t2 = Tr(P(-3, 0, 0), P(0, -1.5, 0), P(0, -0.5, 0));
+    bool result = intersection_2triangles_coincident_planes<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 5
   {
     SCOPED_TRACE("case 5");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-2, 0, 0), Point(0, -2, 0));
-    Triangle t2 = Triangle(Point(-2, -2, 0), Point(0, 1, 0), Point(1, 0, 0));
-    bool result = intersection_2triangles_coincident_planes(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-2, 0, 0), P(0, -2, 0));
+    Tr t2 = Tr(P(-2, -2, 0), P(0, 1, 0), P(1, 0, 0));
+    bool result = intersection_2triangles_coincident_planes<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 6
   {
     SCOPED_TRACE("case 6");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-2, 0, 0), Point(0, -2, 0));
-    Triangle t2 = Triangle(Point(-3, 0, 0), Point(0, -3, 0), Point(1, 1, 0));
-    bool result = intersection_2triangles_coincident_planes(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-2, 0, 0), P(0, -2, 0));
+    Tr t2 = Tr(P(-3, 0, 0), P(0, -3, 0), P(1, 1, 0));
+    bool result = intersection_2triangles_coincident_planes<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 7
   {
     SCOPED_TRACE("case 7");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-2, 0, 0), Point(0, -2, 0));
-    Triangle t2 = Triangle(Point(-3, 0, 0), Point(0, -3, 0), Point(-1, -1, 0));
-    bool result = intersection_2triangles_coincident_planes(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-2, 0, 0), P(0, -2, 0));
+    Tr t2 = Tr(P(-3, 0, 0), P(0, -3, 0), P(-1, -1, 0));
+    bool result = intersection_2triangles_coincident_planes<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 8
   {
     SCOPED_TRACE("case 8");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-2, 0, 0), Point(0, -2, 0));
-    Triangle t2 = Triangle(Point(-3, 0, 0), Point(0, -3, 0), Point(-2, -2, 0));
-    bool result = intersection_2triangles_coincident_planes(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-2, 0, 0), P(0, -2, 0));
+    Tr t2 = Tr(P(-3, 0, 0), P(0, -3, 0), P(-2, -2, 0));
+    bool result = intersection_2triangles_coincident_planes<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 }
@@ -660,72 +646,72 @@ TEST(TriangleTests, intersection_2trianglesTest) {
   // 1
   {
     SCOPED_TRACE("case 1");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, -1, 0));
-    Triangle t2 = Triangle(Point(-2, 0, 0), Point(0, 1, 0), Point(0, 2, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, -1, 0));
+    Tr t2 = Tr(P(-2, 0, 0), P(0, 1, 0), P(0, 2, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
   // 2
   {
     SCOPED_TRACE("case 2");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, -1, 0));
-    Triangle t2 = Triangle(Point(-1, 0, 0), Point(0, 1, 0), Point(0, 2, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, -1, 0));
+    Tr t2 = Tr(P(-1, 0, 0), P(0, 1, 0), P(0, 2, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 3
   {
     SCOPED_TRACE("case 3");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, -1, 0));
-    Triangle t2 = Triangle(Point(-0.5, 0, 0), Point(0, 1, 0), Point(0, 2, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, -1, 0));
+    Tr t2 = Tr(P(-0.5, 0, 0), P(0, 1, 0), P(0, 2, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 4
   {
     SCOPED_TRACE("case 4");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, -1, 0));
-    Triangle t2 = Triangle(Point(-3, 0, 0), Point(0, -1.5, 0), Point(0, -0.5, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, -1, 0));
+    Tr t2 = Tr(P(-3, 0, 0), P(0, -1.5, 0), P(0, -0.5, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 5
   {
     SCOPED_TRACE("case 5");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-2, 0, 0), Point(0, -2, 0));
-    Triangle t2 = Triangle(Point(-2, -2, 0), Point(0, 1, 0), Point(1, 0, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-2, 0, 0), P(0, -2, 0));
+    Tr t2 = Tr(P(-2, -2, 0), P(0, 1, 0), P(1, 0, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 6
   {
     SCOPED_TRACE("case 6");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-2, 0, 0), Point(0, -2, 0));
-    Triangle t2 = Triangle(Point(-3, 0, 0), Point(0, -3, 0), Point(1, 1, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-2, 0, 0), P(0, -2, 0));
+    Tr t2 = Tr(P(-3, 0, 0), P(0, -3, 0), P(1, 1, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 7
   {
     SCOPED_TRACE("case 7");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-2, 0, 0), Point(0, -2, 0));
-    Triangle t2 = Triangle(Point(-3, 0, 0), Point(0, -3, 0), Point(-1, -1, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-2, 0, 0), P(0, -2, 0));
+    Tr t2 = Tr(P(-3, 0, 0), P(0, -3, 0), P(-1, -1, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 8
   {
     SCOPED_TRACE("case 8");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-2, 0, 0), Point(0, -2, 0));
-    Triangle t2 = Triangle(Point(-3, 0, 0), Point(0, -3, 0), Point(-2, -2, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-2, 0, 0), P(0, -2, 0));
+    Tr t2 = Tr(P(-3, 0, 0), P(0, -3, 0), P(-2, -2, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
@@ -735,108 +721,108 @@ TEST(TriangleTests, intersection_2trianglesTest) {
   // 9
   {
     SCOPED_TRACE("case 9");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    Triangle t2 = Triangle(Point(0, 0, 1), Point(0, 1, 0), Point(-2, 0, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    Tr t2 = Tr(P(0, 0, 1), P(0, 1, 0), P(-2, 0, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 10
   {
     SCOPED_TRACE("case 10");
-    Triangle t1 = Triangle(Point(-3, 0, 0), Point(0, -1, 0), Point(0, 0, 1));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(-3, 0, 0), P(0, -1, 0), P(0, 0, 1));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
   // 11
   {
     SCOPED_TRACE("case 11");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-3, 0, 0), Point(0, 0, 2));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-3, 0, 0), P(0, 0, 2));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 12
   {
     SCOPED_TRACE("case 12");
-    Triangle t1 = Triangle(Point(1, 0, 0), Point(-3, 0, 0), Point(0, 0, 2));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(1, 0, 0), P(-3, 0, 0), P(0, 0, 2));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 13
   {
     SCOPED_TRACE("case 13");
-    Triangle t1 = Triangle(Point(-2, 0, 0), Point(-3, 0, 0), Point(0, 0, 2));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(-2, 0, 0), P(-3, 0, 0), P(0, 0, 2));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 14
   {
     SCOPED_TRACE("case 14");
-    Triangle t1 = Triangle(Point(-3, 0, 0), Point(-4, 0, 0), Point(0, 0, 2));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(-3, 0, 0), P(-4, 0, 0), P(0, 0, 2));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
   // 15
   {
     SCOPED_TRACE("case 15");
-    Triangle t1 = Triangle(Point(-4, 0, 0), Point(0, 2, 0), Point(0, 0, 2));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(-4, 0, 0), P(0, 2, 0), P(0, 0, 2));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
   // 16
   {
     SCOPED_TRACE("case 16");
-    Triangle t1 = Triangle(Point(2, 1, 0), Point(-2, -1, 0), Point(0, 0, 2));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 1, 0), Point(-2, 0, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(2, 1, 0), P(-2, -1, 0), P(0, 0, 2));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 1, 0), P(-2, 0, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 17
   {
     SCOPED_TRACE("case 17");
-    Triangle t1 = Triangle(Point(1, 1, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 0, 2), Point(2, 0, 2));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(1, 1, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 0, 2), P(2, 0, 2));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 18
   {
     SCOPED_TRACE("case 18");
-    Triangle t1 = Triangle(Point(1, 1, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(-1, 0, 0), Point(0, 0, 2), Point(2, 0, 2));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(1, 1, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(-1, 0, 0), P(0, 0, 2), P(2, 0, 2));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
   // 19
   {
     SCOPED_TRACE("case 19");
-    Triangle t1 = Triangle(Point(1, 1, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(0, 1, 0), Point(0, 0, 2), Point(2, 0, 2));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(1, 1, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(0, 1, 0), P(0, 0, 2), P(2, 0, 2));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 20
   {
     SCOPED_TRACE("case 20");
-    Triangle t1 = Triangle(Point(1, 1, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(2, 1, 0), Point(0, 0, 2), Point(2, 0, 2));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(1, 1, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(2, 1, 0), P(0, 0, 2), P(2, 0, 2));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
@@ -848,45 +834,45 @@ TEST(TriangleTests, intersection_2trianglesTest) {
   // 21
   {
     SCOPED_TRACE("case 21");
-    Triangle t1 = Triangle(Point(-2, 2, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(0, 0, 1), Point(1, -1, 2), Point(-2, 2, -1));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(-2, 2, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(0, 0, 1), P(1, -1, 2), P(-2, 2, -1));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 22
   {
     SCOPED_TRACE("case 22");
-    Triangle t1 = Triangle(Point(-2, 2, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(0, 0, 1), Point(1, -1, 2), Point(0, 0, 1));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(-2, 2, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(0, 0, 1), P(1, -1, 2), P(0, 0, 1));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false); // segments dont intersect
   }
 
   // 23
   {
     SCOPED_TRACE("case 23");
-    Triangle t1 = Triangle(Point(-2, 2, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(0, 0, 1), Point(-2, 2, -1), Point(0, 0, 1));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(-2, 2, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(0, 0, 1), P(-2, 2, -1), P(0, 0, 1));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 24
   {
     SCOPED_TRACE("case 24");
-    Triangle t1 = Triangle(Point(-2, 2, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(-2, 2, 1), Point(-1, 1, 1), Point(0, 0, 1));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(-2, 2, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(-2, 2, 1), P(-1, 1, 1), P(0, 0, 1));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
   // 25
   {
     SCOPED_TRACE("case 25");
-    Triangle t1 = Triangle(Point(-2, 2, 0), Point(1, -1, 0), Point(1, -1, 0));
-    Triangle t2 = Triangle(Point(0, 0, -1), Point(0, 0, 2), Point(0, 0, 2));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(-2, 2, 0), P(1, -1, 0), P(1, -1, 0));
+    Tr t2 = Tr(P(0, 0, -1), P(0, 0, 2), P(0, 0, 2));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
@@ -895,18 +881,18 @@ TEST(TriangleTests, intersection_2trianglesTest) {
   // 26
   {
     SCOPED_TRACE("case 26");
-    Triangle t1 = Triangle(Point(-2, 2, 0), Point(-2, 2, 0), Point(-2, 2, 0));
-    Triangle t2 = Triangle(Point(0, 0, 1), Point(0, 0, 1), Point(0, 0, 1));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(-2, 2, 0), P(-2, 2, 0), P(-2, 2, 0));
+    Tr t2 = Tr(P(0, 0, 1), P(0, 0, 1), P(0, 0, 1));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
   // 27
   {
     SCOPED_TRACE("case 27");
-    Triangle t1 = Triangle(Point(0, 0, 1), Point(0, 0, 1), Point(0, 0, 1));
-    Triangle t2 = Triangle(Point(0, 0, 1), Point(0, 0, 1), Point(0, 0, 1));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 1), P(0, 0, 1), P(0, 0, 1));
+    Tr t2 = Tr(P(0, 0, 1), P(0, 0, 1), P(0, 0, 1));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
@@ -915,27 +901,27 @@ TEST(TriangleTests, intersection_2trianglesTest) {
   // 28
   {
     SCOPED_TRACE("case 28");
-    Triangle t1 = Triangle(Point(-2, 2, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(-2, 2, 0), Point(-2, 2, 0), Point(-2, 2, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(-2, 2, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(-2, 2, 0), P(-2, 2, 0), P(-2, 2, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 29
   {
     SCOPED_TRACE("case 29");
-    Triangle t1 = Triangle(Point(-2, 2, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(-1, 1, 0), Point(-1, 1, 0), Point(-1, 1, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(-2, 2, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(-1, 1, 0), P(-1, 1, 0), P(-1, 1, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 30
   {
     SCOPED_TRACE("case 30");
-    Triangle t1 = Triangle(Point(-2, 2, 0), Point(-1, 1, 0), Point(0, 0, 0));
-    Triangle t2 = Triangle(Point(1, -1, 0), Point(1, -1, 0), Point(1, -1, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(-2, 2, 0), P(-1, 1, 0), P(0, 0, 0));
+    Tr t2 = Tr(P(1, -1, 0), P(1, -1, 0), P(1, -1, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
@@ -944,27 +930,27 @@ TEST(TriangleTests, intersection_2trianglesTest) {
   // 31
   {
     SCOPED_TRACE("case 31");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(0, 0, 0), Point(0, 0, 0), Point(0, 0, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(0, 0, 0), P(0, 0, 0), P(0, 0, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 32
   {
     SCOPED_TRACE("case 32");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(0, 0, 1), Point(0, 0, 1), Point(0, 0, 1));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(0, 0, 1), P(0, 0, 1), P(0, 0, 1));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
   // 33
   {
     SCOPED_TRACE("case 33");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(-0.5, 0.5, 0), Point(-0.5, 0.5, 0), Point(-0.5, 0.5, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(-0.5, 0.5, 0), P(-0.5, 0.5, 0), P(-0.5, 0.5, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
@@ -973,108 +959,108 @@ TEST(TriangleTests, intersection_2trianglesTest) {
   // 34
   {
     SCOPED_TRACE("case 34");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(-0.5, 0.5, 0), Point(-0.5, 0.5, 0), Point(0, 0, 1));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(-0.5, 0.5, 0), P(-0.5, 0.5, 0), P(0, 0, 1));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 35
   {
     SCOPED_TRACE("case 35");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(-1, 1, -1), Point(-1, 1, -1), Point(0, 0, 1));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(-1, 1, -1), P(-1, 1, -1), P(0, 0, 1));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 36
   {
     SCOPED_TRACE("case 36");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(-1, 1, -1), Point(-1, 1, -1), Point(0, 0, 2));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(-1, 1, -1), P(-1, 1, -1), P(0, 0, 2));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
   // 37
   {
     SCOPED_TRACE("case 37");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(0, 2, 0), Point(0, 2, 0), Point(0, 0, 2));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(0, 2, 0), P(0, 2, 0), P(0, 0, 2));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
   // 38
   {
     SCOPED_TRACE("case 38");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(0, 2, 0), Point(0, 2, 0), Point(0, -1, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(0, 2, 0), P(0, 2, 0), P(0, -1, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 39
   {
     SCOPED_TRACE("case 39");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(-1, -0.5, 0), Point(0.5, 1, 0), Point(-1, -0.5, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(-1, -0.5, 0), P(0.5, 1, 0), P(-1, -0.5, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 40
   {
     SCOPED_TRACE("case 40");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(-2, -0.5, 0), Point(1, 1, 0), Point(-2, -0.5, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(-2, -0.5, 0), P(1, 1, 0), P(-2, -0.5, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 41
   {
     SCOPED_TRACE("case 41");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(-1, 0, 0), Point(0, 1, 0), Point(0, 1, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(-1, 0, 0), P(0, 1, 0), P(0, 1, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 42
   {
     SCOPED_TRACE("case 42");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(-2, 0, 0), Point(-2, 0, 0), Point(0, 2, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(-2, 0, 0), P(-2, 0, 0), P(0, 2, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
   // 43
   {
     SCOPED_TRACE("case 43");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(1, 1, 0), Point(0.5, 1, 0), Point(-1, 1, 0));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(1, 1, 0), P(0.5, 1, 0), P(-1, 1, 0));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 
   // 44
   {
     SCOPED_TRACE("case 44");
-    Triangle t1 = Triangle(Point(0, 0, 0), Point(-1, 0, 0), Point(0, 1, 0));
-    Triangle t2 = Triangle(Point(1, 1, 1), Point(0.5, 1, 1), Point(-1, 1, 1));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(0, 0, 0), P(-1, 0, 0), P(0, 1, 0));
+    Tr t2 = Tr(P(1, 1, 1), P(0.5, 1, 1), P(-1, 1, 1));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, false);
   }
 
-  // 44
+  // 45
   {
     SCOPED_TRACE("case 45");
-    Triangle t1 = Triangle(Point(1, 1, 0), Point(3, 1, 0), Point(1, 3, 0));
-    Triangle t2 = Triangle(Point(1, 1, 0),  Point(1, 2, 3), Point(5, 4, 8));
-    bool result = intersection_2triangles(t1, t2);
+    Tr t1 = Tr(P(1, 1, 0), P(3, 1, 0), P(1, 3, 0));
+    Tr t2 = Tr(P(1, 1, 0), P(1, 2, 3), P(5, 4, 8));
+    bool result = intersection_2triangles<T>(t1, t2);
     ASSERT_EQ(result, true);
   }
 }

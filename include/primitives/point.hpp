@@ -4,49 +4,46 @@
 #include "common.hpp"
 #include <cmath>
 #include <iostream>
+#include <limits>
 
-class Vector;
+template <typename T> struct Vector;
 
-class Point {
-    double x_ = NAN;
-    double y_ = NAN;
-    double z_ = NAN;
+template <typename T> struct Point {
+    T x_;
+    T y_;
+    T z_;
 
-  public:
-    Point(double x, double y, double z) : x_(x), y_(y), z_(z) {}
-    Point(const Point &p) : x_(p.x_), y_(p.y_), z_(p.z_) {}
-    Point() noexcept = default;
-    Point &operator=(const Point &p) noexcept = default;
+    Point() noexcept : x_(T(0)), y_(T(0)), z_(T(0)) {}
+    Point(const T &x, const T &y, const T &z) noexcept : x_(x), y_(y), z_(z) {}
+    Point(const Vector<T> &v) : x_(v.x_), y_(v.y_), z_(v.z_) {}
 
-    inline double getX() const noexcept { return x_; }
-    inline double getY() const noexcept { return y_; }
-    inline double getZ() const noexcept { return z_; }
+    Vector<T> toVector() const noexcept { return Vector<T>(x_, y_, z_); }
 
-    inline void setX(double x) noexcept { x_ = x; }
-    inline void setY(double y) noexcept { y_ = y; }
-    inline void setZ(double z) noexcept { z_ = z; }
+    static Point badPoint() noexcept {
+      return Point(std::numeric_limits<T>::quiet_NaN(), std::numeric_limits<T>::quiet_NaN(), std::numeric_limits<T>::quiet_NaN());
+    }
+    static Point zeroPoint() noexcept { return Point(T(0), T(0), T(0)); }
 
-    Vector toVector() const noexcept;
+    bool isBad() const noexcept { return std::isnan(x_) || std::isnan(y_) || std::isnan(z_); }
 
-    static inline Point badPoint() noexcept { return Point(NAN, NAN, NAN); }
-    static inline Point zeroPoint() noexcept { return Point(0, 0, 0); }
-
-    inline bool isBad() const noexcept { return std::isnan(x_) || std::isnan(y_) || std::isnan(z_); }
-
-    void print(std::ostream &out) const noexcept;
+    void print(std::ostream &out) const noexcept { out << "p{" << x_ << ", " << y_ << ", " << z_ << "}"; }
 };
 
-bool operator==(const Point &a, const Point &b);
-bool operator!=(const Point &a, const Point &b);
-
-inline bool equal(const Point &p1, const Point &p2) noexcept {
-  return approx_equal(p1.getX(), p2.getX()) && approx_equal(p1.getY(), p2.getY()) && approx_equal(p1.getZ(), p2.getZ());
+template <typename T> bool operator==(const Point<T> &a, const Point<T> &b) {
+  return (approx_equal(a.x_, b.x_)) && (approx_equal(a.y_, b.y_)) && (approx_equal(a.z_, b.z_));
+}
+template <typename T> bool operator!=(const Point<T> &a, const Point<T> &b) {
+  return (!approx_equal(a.x_, b.x_)) || (!approx_equal(a.y_, b.y_)) || (!approx_equal(a.z_, b.z_));
 }
 
-inline double distance(const Point &a, const Point &b) noexcept {
-  const double dx = a.getX() - b.getX();
-  const double dy = a.getY() - b.getY();
-  const double dz = a.getZ() - b.getZ();
+template <typename T> inline bool equal(const Point<T> &p1, const Point<T> &p2) noexcept {
+  return approx_equal(p1.x_, p2.x_) && approx_equal(p1.y_, p2.y_) && approx_equal(p1.z_, p2.z_);
+}
+
+template <typename T> inline T distance(const Point<T> &a, const Point<T> &b) noexcept {
+  T dx = a.x_ - b.x_;
+  T dy = a.y_ - b.y_;
+  T dz = a.z_ - b.z_;
   return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
 

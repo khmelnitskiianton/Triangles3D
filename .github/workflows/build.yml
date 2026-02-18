@@ -75,6 +75,6 @@ jobs:
 
     - name: UnitTests
       run: ctest --test-dir build/tests/unittests/ --output-on-failure
-
+  
     - name: End2EndTests
       run: python3 tests/e2e/run.py --bin ./build/bin/triangles
