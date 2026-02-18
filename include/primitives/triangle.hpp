@@ -2,6 +2,7 @@
 #define _INCLUDE_PRIMITIVES_TRIANGLES_HPP_
 
 #include <iostream>
+#include <algorithm>
 #include <optional>
 #include <variant>
 
@@ -106,7 +107,6 @@ template <typename T> struct Triangle {
       const Vector<T> b = b_.toVector();
       const Vector<T> c = c_.toVector();
 
-      // просто возьмём центр масс и радиус как макс. расстояние до вершин
       const Vector center = (a + b + c) * (1.0 / 3.0);
       const T r = std::max({distance(a.toPoint(), center.toPoint()), distance(b.toPoint(), center.toPoint()),
                             distance(c.toPoint(), center.toPoint())});

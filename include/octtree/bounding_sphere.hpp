@@ -23,10 +23,10 @@ template <typename T> inline bool overlap(const BoundingSphere<T> &a, const Boun
   const Point ca = a.center_;
   const Point cb = b.center_;
 
-  const Vector d = vec_from_points(ca, cb); // или просто cb - ca, как у тебя реализовано
-  const T dist2 = d * d;                    // квадрат расстояния
+  const Vector d = vec_from_points(ca, cb);
+  const T dist2 = d * d;
   const T r = a.radius_ + b.radius_;
   return dist2 <= r * r;
-}
+} 
 
 #endif
