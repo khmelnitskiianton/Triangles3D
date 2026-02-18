@@ -65,7 +65,6 @@ template <typename T> inline bool overlap(const BoundingBox<T> &a, const Boundin
   const Point<T> &bmin = b.min_;
   const Point<T> &bmax = b.max_;
 
-  // Пересечение по всем трём осям (границы считаем пересечением)
   return (amax.x_ >= bmin.x_ && bmax.x_ >= amin.x_ && amax.y_ >= bmin.y_ && bmax.y_ >= amin.y_ && amax.z_ >= bmin.z_ &&
           bmax.z_ >= amin.z_);
 }
