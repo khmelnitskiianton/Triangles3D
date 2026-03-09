@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(SANITIZE "Enable compiler sanitizers" OFF)
 option(BUILD_TESTS "Build unit tests" OFF)
+option(GRAPHIC "Add graphical 3D simulation of triangles" OFF)
 
 add_subdirectory(source)
 if (BUILD_TESTS)

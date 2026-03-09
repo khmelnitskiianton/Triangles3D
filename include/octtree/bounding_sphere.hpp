@@ -27,6 +27,6 @@ template <typename T> inline bool overlap(const BoundingSphere<T> &a, const Boun
   const T dist2 = d * d;
   const T r = a.radius_ + b.radius_;
   return dist2 <= r * r;
-} 
+}
 
 #endif
