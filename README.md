@@ -137,18 +137,7 @@ Triangles3D/
 ├── README.md
 ├── source
 │   ├── CMakeLists.txt
-│   ├── main.cpp
-│   ├── octtree
-│   │   ├── bounding_box.cpp
-│   │   ├── bounding_sphere.cpp
-│   │   └── octtree.cpp
-│   └── primitives
-│       ├── line.cpp
-│       ├── plane.cpp
-│       ├── point.cpp
-│       ├── segment.cpp
-│       ├── triangle.cpp
-│       └── vector.cpp
+│   └── main.cpp
 └── tests
     ├── e2e
     │   ├── keys
