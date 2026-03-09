@@ -67,21 +67,6 @@ if (GRAPHIC)
 
     set(GRAPHIC_SOURCES 
         ${PROJECT_SOURCE_DIR}/source/main_graphic.cpp
-        # Primitives
-        ${PROJECT_SOURCE_DIR}/source/primitives/triangle.cpp
-        ${PROJECT_SOURCE_DIR}/source/primitives/vector.cpp
-        ${PROJECT_SOURCE_DIR}/source/primitives/plane.cpp
-        ${PROJECT_SOURCE_DIR}/source/primitives/point.cpp
-        ${PROJECT_SOURCE_DIR}/source/primitives/line.cpp
-        ${PROJECT_SOURCE_DIR}/source/primitives/segment.cpp
-    
-        # Octree
-        ${PROJECT_SOURCE_DIR}/source/octtree/octtree.cpp
-        ${PROJECT_SOURCE_DIR}/source/octtree/bounding_box.cpp
-        ${PROJECT_SOURCE_DIR}/source/octtree/bounding_sphere.cpp
-
-        # OpenGL
-        
     )
 
     add_executable(${GRAPHIC_TARGET} ${GRAPHIC_SOURCES})
