@@ -1,8 +1,8 @@
 #ifndef _INCLUDE_PRIMITIVES_TRIANGLES_HPP_
 #define _INCLUDE_PRIMITIVES_TRIANGLES_HPP_
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 #include <optional>
 #include <variant>
 

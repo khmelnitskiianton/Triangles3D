@@ -19,21 +19,21 @@ template <typename T> class OctTree {
     using TriIndex = size_t;
     class Node {
       private:
-        BoundingBox<T> region_; // bounding region
-        std::vector<TriIndex> objects_; // objects
+        BoundingBox<T> region_;            // bounding region
+        std::vector<TriIndex> objects_;    // objects
         Node *parent_ = nullptr;           // parent
         std::array<Node *, 8> child_ = {}; // child nodes
-        int active_nodes_ = 0; // bit mask for active nodes
+        int active_nodes_ = 0;             // bit mask for active nodes
 
       public:
         Node() : region_(BoundingBox(Point<T>::zeroPoint(), Point<T>::zeroPoint())) {}
         Node(const BoundingBox<T> &region, const std::vector<TriIndex> &obj_list) : region_(region), objects_(obj_list) {}
-        
-        Node(const Node& rhs) = delete;
-        Node(Node&& other) = delete;
-        Node& operator=(const Node& rhs) = delete;
-        Node& operator=(Node&& rhs) = delete;
-        
+
+        Node(const Node &rhs) = delete;
+        Node(Node &&other) = delete;
+        Node &operator=(const Node &rhs) = delete;
+        Node &operator=(Node &&rhs) = delete;
+
         ~Node() = default;
 
         void setParent(Node *parent) { parent_ = parent; }
@@ -41,7 +41,7 @@ template <typename T> class OctTree {
         int getActiveNodes() { return active_nodes_; }
 
         friend class OctTree<T>;
-      };
+    };
 
     /*
         Fields
@@ -54,7 +54,7 @@ template <typename T> class OctTree {
     /*
         Methods
     */
-    void intersect(const Node& node , const std::vector<TriIndex> &parent_obj, std::vector<TriIndex> &result) {
+    void intersect(const Node &node, const std::vector<TriIndex> &parent_obj, std::vector<TriIndex> &result) {
       for (const TriIndex &idx_p : parent_obj) {
         for (const TriIndex &idx_l : node.objects_) {
           if (intersection_2triangles(all_objects_[idx_p], all_objects_[idx_l])) {
@@ -108,7 +108,7 @@ template <typename T> class OctTree {
       return box;
     }
 
-    void buildTree(Node& node) {
+    void buildTree(Node &node) {
       // End of recursion
       if (node.objects_.size() <= 1)
         return;
@@ -125,19 +125,19 @@ template <typename T> class OctTree {
       // Create parts of every octant
       std::array<BoundingBox<T>, 8> octant = {};
       octant[0] = BoundingBox(node.region_.min_.toVector(), center);
-      octant[1] =
-          BoundingBox(Vector(center.x_, node.region_.min_.y_, node.region_.min_.z_), Vector(node.region_.max_.x_, center.y_, center.z_));
-      octant[2] =
-          BoundingBox(Vector(center.x_, node.region_.min_.y_, center.z_), Vector(node.region_.max_.x_, center.y_, node.region_.max_.z_));
-      octant[3] =
-          BoundingBox(Vector(node.region_.min_.x_, node.region_.min_.y_, center.z_), Vector(center.x_, center.y_, node.region_.max_.z_));
-      octant[4] =
-          BoundingBox(Vector(node.region_.min_.x_, center.y_, node.region_.min_.z_), Vector(center.x_, node.region_.max_.y_, center.z_));
-      octant[5] =
-          BoundingBox(Vector(center.x_, center.y_, node.region_.min_.z_), Vector(node.region_.max_.x_, node.region_.max_.y_, center.z_));
+      octant[1] = BoundingBox(Vector(center.x_, node.region_.min_.y_, node.region_.min_.z_),
+                              Vector(node.region_.max_.x_, center.y_, center.z_));
+      octant[2] = BoundingBox(Vector(center.x_, node.region_.min_.y_, center.z_),
+                              Vector(node.region_.max_.x_, center.y_, node.region_.max_.z_));
+      octant[3] = BoundingBox(Vector(node.region_.min_.x_, node.region_.min_.y_, center.z_),
+                              Vector(center.x_, center.y_, node.region_.max_.z_));
+      octant[4] = BoundingBox(Vector(node.region_.min_.x_, center.y_, node.region_.min_.z_),
+                              Vector(center.x_, node.region_.max_.y_, center.z_));
+      octant[5] = BoundingBox(Vector(center.x_, center.y_, node.region_.min_.z_),
+                              Vector(node.region_.max_.x_, node.region_.max_.y_, center.z_));
       octant[6] = BoundingBox(center, node.region_.max_.toVector());
-      octant[7] =
-          BoundingBox(Vector(node.region_.min_.x_, center.y_, center.z_), Vector(center.x_, node.region_.max_.y_, node.region_.max_.z_));
+      octant[7] = BoundingBox(Vector(node.region_.min_.x_, center.y_, center.z_),
+                              Vector(center.x_, node.region_.max_.y_, node.region_.max_.z_));
 
       std::array<std::vector<TriIndex>, 8> oct_idxes;
       // Check which obj goes to which octant
@@ -194,13 +194,13 @@ template <typename T> class OctTree {
       buildTree(*root_);
     }
     template <typename C> OctTree(const C &container) : OctTree(std::begin(container), std::end(container)) {}
-    
-    OctTree(const OctTree& rhs) = delete;
-    OctTree(OctTree&& rhs) = delete;
-    OctTree& operator=(const OctTree& rhs) = delete;
-    OctTree& operator=(OctTree&& rhs) = delete;
 
-    ~OctTree() {   
+    OctTree(const OctTree &rhs) = delete;
+    OctTree(OctTree &&rhs) = delete;
+    OctTree &operator=(const OctTree &rhs) = delete;
+    OctTree &operator=(OctTree &&rhs) = delete;
+
+    ~OctTree() {
       if (root_ == nullptr)
         return;
 

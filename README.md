@@ -20,25 +20,32 @@
 <p align="center">
   <img src="https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++" />&emsp;
   <img src="https://img.shields.io/badge/CMake-064F8C?style=for-the-badge&logo=cmake&logoColor=white" alt="CMake" />&emsp;
+  <img src="https://img.shields.io/badge/OpenGL-API-064F8C?style=for-the-badge&logo=opengl&logoColor=white" alt="CMake" />&emsp;
   <img src="https://img.shields.io/badge/Markdown-000000?style=for-the-badge&logo=markdown&logoColor=white" alt="Markdown" />
 </p>
 
-Project of simulation 3D triangles intersection.
+<p align="center">
+  <img src=".github/images/scene.gif" width="600" />
+</p>
 
-Docs for geometry, BVH and speed up tips in [docs](docs/)
+Project of simulation 3D triangles intersection with C++ on OpenGL
+
+> Docs for graphics, geometry, BVH and speed up tips in [docs](docs/)
 
 ## Dependencies
 
 Compiler c/c++, cmake, python, gtest
 
 ```shell
-apt-get install build-essential clang ninja-build make cmake python3
-apt-get install libgtest-dev libgmock-dev libtbb-dev
+apt-get install build-essential clang ninja-build make cmake python3 # necessary packages
+apt-get install libgtest-dev libgmock-dev libtbb-dev # GTest
+apt-get install libglfw3-dev libglm-dev python3 # OpenGL
 ```
 
 ## Building
 
-Using CMake, you can specify 2 options:
+Using CMake, you can specify 3 options:
+- `GRAPHIC`: add target with graphical 3D simulation of triangles
 - `SANITIZE`: enables sanitizers for gcc/clang compilers.
 - `BUILD_TESTS`: build unit tests with GTest.
 
@@ -46,12 +53,12 @@ Using CMake, you can specify 2 options:
 
 *Debug:*
 ```shell
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DSANITIZE=ON -S . -B build
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DSANITIZE=ON -DGRAPHIC=ON -S . -B build
 ```
 
 *Release:*
 ```shell
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -S . -B build
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAPHIC=ON -S . -B build
 ```
 
 ### Build
@@ -83,7 +90,7 @@ Format of input (stdin): amount of triangles, next for each triangle pass 3 poin
 8 8 8 8 8 8 -10 8 8
 ```
 
-Format of output: id's of triangles that has intersection (each on new line)
+**triangles** format of output: id's of triangles that has intersection (each on new line)
 
 ```
 0
@@ -93,6 +100,12 @@ Format of output: id's of triangles that has intersection (each on new line)
 4
 5
 ```
+
+**triangles-3d** format of output:
+
+<p align="center">
+  <img src=".github/images/inter1.png" width="600" />
+</p>
 
 ## Tests
 
@@ -117,10 +130,16 @@ Triangles3D/
 ├── CMakeLists.txt
 ├── docs
 │   ├── GeometryToolsForComputerGraphics.pdf
-│   ├── README.md
+│   ├── README_GEOMETRY.md
+│   ├── README_GRAPHIC.md
+│   ├── README_OCTREE.md
 │   └── TriangleIntersectionAlgorithm.pdf
 ├── include
 │   ├── common.hpp
+│   ├── graphic
+│   │   ├── camera.h
+│   │   ├── renderer.h
+│   │   └── shader.h
 │   ├── io_wrap.hpp
 │   ├── octtree
 │   │   ├── bounding_box.hpp
@@ -135,14 +154,21 @@ Triangles3D/
 │       └── vector.hpp
 ├── LICENSE
 ├── README.md
+├── shaders
+│   ├── direct_lighting.fs
+│   └── direct_lighting.vs
 ├── source
 │   ├── CMakeLists.txt
+│   ├── main_graphic.cpp
 │   └── main.cpp
 └── tests
     ├── e2e
+    │   ├── 13.dat
+    │   ├── 5.dat
     │   ├── keys
     │   ├── run.py
     │   └── tests
+    ├── e2e.tar.gz
     └── unittests
         ├── CMakeLists.txt
         └── unittests.cpp
